@@ -25,6 +25,9 @@ int main(void)
 
     int maxfd, counter;
 
+    const char s[2] = " ";  //para procurar por espaços, usado no menu
+    char *token;            //para guardar numa string o resto da string que se está a usar (menu)
+
     // Variáveis do servidor TCP
     struct addrinfo hints, *res;
     int errcode;
@@ -107,7 +110,42 @@ int main(void)
         if (FD_ISSET(0, &rfds))
         {
             printf("Insira um comando");
-            fgets(pedro, 128, stdin);
+            fgets(pedro, 128, stdin);       //receber input do teclado
+
+            token = strtok(pedro, s);       //procurar no input onde está o espaço
+
+            if (strcmp(pedro, "new") == 0) 
+            {
+                // do something
+            } 
+            else if (strcmp(pedro, "entry") == 0)
+            {
+                // do something else
+            }
+            else if (strcmp(pedro, "sentry") == 0)
+            {
+                // do something else
+            }
+            else if (strcmp(pedro, "leave") == 0)
+            {
+                // do something else
+            }
+            else if (strcmp(pedro, "show") == 0)
+            {
+                // do something else
+            }
+            else if (strcmp(pedro, "find") == 0)
+            {
+                // do something else
+            }
+            else if (strcmp(pedro, "exit") == 0)
+            {
+                // do something else
+            }
+            else /* default: */
+            {
+                printf("Erro, insira um comando válido");
+            }
         }
 
         //Conexão TCP
