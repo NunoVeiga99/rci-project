@@ -4,6 +4,7 @@
 #include<netdb.h>
 #include<string.h>
 #include<unistd.h>
+#include<stdio.h>
 
 
 int main()
@@ -24,9 +25,11 @@ int main()
 
     if( bind (fd,res->ai_addr,res->ai_addrlen)==-1)/*error*/exit(1);
     if( listen (fd,5)==-1)/*error*/exit(1);
+    printf("estou a ouvir");
 
     while(1){addrlen=sizeof(addr);
         if((newfd= accept (fd,(struct sockaddr*)&addr,&addrlen))==-1)/*error*/exit(1);
+        printf("accept funciona");
         while((n= read (newfd,buffer,128))!=0){
             if(n==-1)/*error*/exit(1);
             ptr=&buffer[0]; 
