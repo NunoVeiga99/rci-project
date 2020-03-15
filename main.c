@@ -160,7 +160,7 @@ int main(void)
             
         }
 
-        //Não sei para que é que serve o fucking afd mano
+        //Não sei para que é que serve o fucking afd mano (Pedro: EU NÃO PERCEBO NADA DISTO AHAHAHHAHA)
         if (FD_ISSET(afd, &rfds))
         {
             if ((n = read(afd, buffer, 128)) != 0)
