@@ -36,6 +36,7 @@ int main(void)
     socklen_t addrlen;
     char *ptr, buffer[128];
     char pedro[128]; //para eu experimentar fazer cenas - TESTE
+    int teste=0;        //TESTE
 
     // Variáveis do servidor udp
     struct addrinfo udphints, *udpres;
@@ -109,42 +110,46 @@ int main(void)
         //É dentro deste if que se lê o input do utilizador
         if (FD_ISSET(0, &rfds))
         {
-            printf("Insira um comando");
+            
+            printf("Insira um comando:\n");
+            fflush(stdout);
+            //scanf("%s", pedro);
             fgets(pedro, 128, stdin);       //receber input do teclado
 
             token = strtok(pedro, s);       //procurar no input onde está o espaço
 
+
             if (strcmp(pedro, "new") == 0) 
             {
-                // do something
+                printf("Escolheu: new\n");
             } 
             else if (strcmp(pedro, "entry") == 0)
             {
-                // do something else
+                printf("Escolheu: entry\n");
             }
             else if (strcmp(pedro, "sentry") == 0)
             {
-                // do something else
+                printf("Escolheu: sentry\n");
             }
-            else if (strcmp(pedro, "leave") == 0)
+            else if (strcmp(pedro, "leave\n") == 0)
             {
-                // do something else
+                printf("Escolheu: leave\n");
             }
-            else if (strcmp(pedro, "show") == 0)
+            else if (strcmp(pedro, "show\n") == 0)
             {
-                // do something else
+                printf("Escolheu: show\n");
             }
             else if (strcmp(pedro, "find") == 0)
             {
-                // do something else
+                printf("Escolheu: find\n");
             }
-            else if (strcmp(pedro, "exit") == 0)
+            else if (strcmp(pedro, "exit\n") == 0)
             {
-                // do something else
+                printf("Escolheu: exit\n");
             }
             else /* default: */
             {
-                printf("Erro, insira um comando válido");
+                printf("Erro, insira um comando válido\n");
             }
         }
 
