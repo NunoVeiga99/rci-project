@@ -8,6 +8,7 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 #include <string.h>
+#include <errno.h>
 
 /* ... */
 #define max(A, B) ((A) >= (B) ? (A) : (B))
@@ -31,6 +32,7 @@ int main(void)
     struct sockaddr_in addr;
     socklen_t addrlen;
     char *ptr, buffer[128];
+    char pedro[128]; //para eu experimentar fazer cenas - TESTE
 
     // Variáveis do servidor udp
     struct addrinfo udphints, *udpres;
@@ -104,6 +106,8 @@ int main(void)
         //É dentro deste if que se lê o input do utilizador
         if (FD_ISSET(0, &rfds))
         {
+            printf("Insira um comando");
+            fgets(pedro, 128, stdin);
         }
 
         //Conexão TCP
