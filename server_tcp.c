@@ -25,17 +25,19 @@ int main()
 
     if( bind (fd,res->ai_addr,res->ai_addrlen)==-1)/*error*/exit(1);
     if( listen (fd,5)==-1)/*error*/exit(1);
-    printf("estou a ouvir");
+    
 
-    while(1){addrlen=sizeof(addr);
+    while(1){
+        addrlen=sizeof(addr);
         if((newfd= accept (fd,(struct sockaddr*)&addr,&addrlen))==-1)/*error*/exit(1);
-        printf("accept funciona");
         while((n= read (newfd,buffer,128))!=0){
             if(n==-1)/*error*/exit(1);
             ptr=&buffer[0]; 
             while(n>0){if((nw= write (newfd,ptr,n))<=0)/*error*/exit(1);
             n-=nw; ptr+=nw;}
         }
+        write(1, "Mensagem recebida: ", 20);
+        write(1,buffer,n);
     close (newfd);
     }
 //freeaddrinfo(res);close(fd);exit(0);
