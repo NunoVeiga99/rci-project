@@ -37,6 +37,7 @@ int main(void)
     char *ptr, buffer[128];
     char pedro[128]; //para eu experimentar fazer cenas - TESTE
     int teste=0;        //TESTE
+    int i = 0;
 
     // Variáveis do servidor udp
     struct addrinfo udphints, *udpres;
@@ -112,16 +113,21 @@ int main(void)
         {
             
             printf("Insira um comando:\n");
-            fflush(stdout);
+            //fflush(stdout);
             //scanf("%s", pedro);
             fgets(pedro, 128, stdin);       //receber input do teclado
-
             token = strtok(pedro, s);       //procurar no input onde está o espaço
-
+            printf("pedro: %s\n", pedro);
+            printf("token: %s\n", token);
 
             if (strcmp(pedro, "new") == 0) 
-            {
+            { 
                 printf("Escolheu: new\n");
+                while(token != NULL){
+                    token = strtok(NULL,s);
+                    printf("token %d: %s\n", i, token);
+                    i++;
+                }
             } 
             else if (strcmp(pedro, "entry") == 0)
             {
@@ -151,7 +157,9 @@ int main(void)
             {
                 printf("Erro, insira um comando válido\n");
             }
+
         }
+
 
         //Conexão TCP
         if (FD_ISSET(fd, &rfds))
