@@ -13,6 +13,9 @@
 /* ... */
 #define max(A, B) ((A) >= (B) ? (A) : (B))
 
+#define smallchar 5
+#define bigchar 100
+
 int main(void)
 {
     int fd, newfd, afd = 0;
@@ -25,8 +28,8 @@ int main(void)
 
     int maxfd, counter;
 
-    const char s[2] = " ";  //para procurar por espaços, usado no menu
-    char *token;            //para guardar numa string o resto da string que se está a usar (menu)
+    const char s[2] = " "; //para procurar por espaços, usado no menu
+    char *token;           //para guardar numa string o resto da string que se está a usar (menu)
 
     // Variáveis do servidor TCP
     struct addrinfo hints, *res;
@@ -36,8 +39,17 @@ int main(void)
     socklen_t addrlen;
     char *ptr, buffer[128];
     char pedro[128]; //para eu experimentar fazer cenas - TESTE
-    int teste=0;        //TESTE
+    int teste = 0;   //TESTE
     int i = 0;
+
+    //Struct para guardar informações do servidor
+    struct 
+    {
+        int key;
+        char IP[bigchar];
+        char next_server[bigchar];
+        char next2_server[bigchar];
+    } server;
 
     // Variáveis do servidor udp
     struct addrinfo udphints, *udpres;
@@ -83,8 +95,6 @@ int main(void)
 
     state = idle; // idle = não está ocupado
 
-
-
     while (1)
     {
 
@@ -92,7 +102,7 @@ int main(void)
         FD_SET(0, &rfds);
         FD_SET(fd, &rfds);
         FD_SET(udpfd, &rfds);
-        maxfd = max(fd,udpfd);
+        maxfd = max(fd, udpfd);
 
         // Se está ocupado
         if (state == busy)
@@ -111,24 +121,27 @@ int main(void)
         //É dentro deste if que se lê o input do utilizador
         if (FD_ISSET(0, &rfds))
         {
-            
+            fflush(stdout);
             printf("Insira um comando:\n");
-            //fflush(stdout);
+            //fprintf(stdout, "Insira um comando:\n");
+            fflush(stdout);
             //scanf("%s", pedro);
-            fgets(pedro, 128, stdin);       //receber input do teclado
-            token = strtok(pedro, s);       //procurar no input onde está o espaço
+            fgets(pedro, 128, stdin); //receber input do teclado
+
+            token = strtok(pedro, s); //procurar no input onde está o espaço
             printf("pedro: %s\n", pedro);
             printf("token: %s\n", token);
 
-            if (strcmp(pedro, "new") == 0) 
-            { 
+            if (strcmp(pedro, "new") == 0)
+            {
                 printf("Escolheu: new\n");
-                while(token != NULL){
-                    token = strtok(NULL,s);
+                while (token != NULL)
+                {
+                    token = strtok(NULL, s);
                     printf("token %d: %s\n", i, token);
                     i++;
                 }
-            } 
+            }
             else if (strcmp(pedro, "entry") == 0)
             {
                 printf("Escolheu: entry\n");
@@ -157,9 +170,7 @@ int main(void)
             {
                 printf("Erro, insira um comando válido\n");
             }
-
         }
-
 
         //Conexão TCP
         if (FD_ISSET(fd, &rfds))
@@ -202,17 +213,16 @@ int main(void)
         //Conexão UDP
         if (FD_ISSET(udpfd, &rfds))
         {
-                addrlen = sizeof(addr);
-                nread = recvfrom(udpfd, buffer, 128, 0, (struct sockaddr *)&addr, &addrlen);
-                if (nread == -1) /*error*/
-                    exit(1);
-                n = sendto(udpfd, buffer, nread, 0, (struct sockaddr *)&addr, addrlen);
-                if (n == -1) /*error*/
-                    exit(1);
+            addrlen = sizeof(addr);
+            nread = recvfrom(udpfd, buffer, 128, 0, (struct sockaddr *)&addr, &addrlen);
+            if (nread == -1) /*error*/
+                exit(1);
+            n = sendto(udpfd, buffer, nread, 0, (struct sockaddr *)&addr, addrlen);
+            if (n == -1) /*error*/
+                exit(1);
 
-                write(1, "Mensagem udp recebida: ", 24);
-                write(1, buffer, 7);
-            
+            write(1, "Mensagem udp recebida: ", 24);
+            write(1, buffer, 7);
         }
 
         //Não sei para que é que serve o fucking afd mano (Pedro: EU NÃO PERCEBO NADA DISTO AHAHAHHAHA)
