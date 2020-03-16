@@ -56,8 +56,6 @@ int main(int argc, char *argv[])
 
     //Inicializa o servidor
     struct server *servidor;
-    servidor->next = NULL;
-    servidor->next2 = NULL;
 
     const char s[2] = " "; //para procurar por espaços, usado no menu
     char *token;           //para guardar numa string o resto da string que se está a usar (menu)
@@ -94,6 +92,7 @@ int main(int argc, char *argv[])
     //servidor->porto = atoi(argv[2]);
     strcpy(servidor->porto, argv[2]);
     printf("Porto: %s\n", servidor->porto);
+    
 
     // Cria socket TCP
     if ((fd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
@@ -165,7 +164,7 @@ int main(int argc, char *argv[])
             //scanf("%s", comando);
             fgets(comando, 128, stdin); //receber input do teclado
 
-            strcpy(comandofull, comando);
+            //strcpy(comandofull, comando);
 
             token = strtok(comando, s); //procurar no input onde está o espaço
             printf("comando: %s\n", comando);
@@ -188,10 +187,9 @@ int main(int argc, char *argv[])
             {
                 printf("Escolheu: sentry\n");
 
-                count = countspace(comandofull, c);
-                printf("token: %s \n", comandofull);
-                printf("character '%c' occurs %d times \n ", c, count);
-
+                //count = countspace(comandofull, c);
+                //printf("token: %s \n", comandofull);
+                //printf("character '%c' occurs %d times \n ", c, count);
 
                 /*
                 while(token!=NULL)
@@ -294,5 +292,7 @@ int main(int argc, char *argv[])
             } //connection closed by peer
         }
     } //while(1)
+    free(comando);
+    free(comandofull);
     /*close(fd);exit(0);*/
 }
