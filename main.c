@@ -38,9 +38,10 @@ int main(void)
     struct sockaddr_in addr;
     socklen_t addrlen;
     char *ptr, buffer[128];
-    char pedro[128]; //para eu experimentar fazer cenas - TESTE
+    char comando[128]; //para eu experimentar fazer cenas - TESTE
     int teste = 0;   //TESTE
     int i = 0;
+
 
     //Struct para guardar informações do servidor
     struct 
@@ -97,7 +98,6 @@ int main(void)
 
     while (1)
     {
-
         //input do utilizador
         FD_SET(0, &rfds);
         FD_SET(fd, &rfds);
@@ -121,18 +121,16 @@ int main(void)
         //É dentro deste if que se lê o input do utilizador
         if (FD_ISSET(0, &rfds))
         {
-            fflush(stdout);
             printf("Insira um comando:\n");
-            //fprintf(stdout, "Insira um comando:\n");
             fflush(stdout);
-            //scanf("%s", pedro);
-            fgets(pedro, 128, stdin); //receber input do teclado
+            //scanf("%s", comando);
+            fgets(comando, 128, stdin); //receber input do teclado
 
-            token = strtok(pedro, s); //procurar no input onde está o espaço
-            printf("pedro: %s\n", pedro);
+            token = strtok(comando, s); //procurar no input onde está o espaço
+            printf("comando: %s\n", comando);
             printf("token: %s\n", token);
 
-            if (strcmp(pedro, "new") == 0)
+            if (strcmp(comando, "new") == 0)
             {
                 printf("Escolheu: new\n");
                 while (token != NULL)
@@ -142,27 +140,27 @@ int main(void)
                     i++;
                 }
             }
-            else if (strcmp(pedro, "entry") == 0)
+            else if (strcmp(comando, "entry") == 0)
             {
                 printf("Escolheu: entry\n");
             }
-            else if (strcmp(pedro, "sentry") == 0)
+            else if (strcmp(comando, "sentry") == 0)
             {
                 printf("Escolheu: sentry\n");
             }
-            else if (strcmp(pedro, "leave\n") == 0)
+            else if (strcmp(comando, "leave\n") == 0)
             {
                 printf("Escolheu: leave\n");
             }
-            else if (strcmp(pedro, "show\n") == 0)
+            else if (strcmp(comando, "show\n") == 0)
             {
                 printf("Escolheu: show\n");
             }
-            else if (strcmp(pedro, "find") == 0)
+            else if (strcmp(comando, "find") == 0)
             {
                 printf("Escolheu: find\n");
             }
-            else if (strcmp(pedro, "exit\n") == 0)
+            else if (strcmp(comando, "exit\n") == 0)
             {
                 printf("Escolheu: exit\n");
             }
