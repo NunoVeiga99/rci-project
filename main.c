@@ -16,7 +16,7 @@
 #define smallchar 5
 #define bigchar 100
 
-int main(void)
+int main(int argc, char*argv[])
 {
     int fd, newfd, afd = 0;
     fd_set rfds;
@@ -38,8 +38,7 @@ int main(void)
     struct sockaddr_in addr;
     socklen_t addrlen;
     char *ptr, buffer[128];
-    char comando[128]; //para eu experimentar fazer cenas - TESTE
-    int teste = 0;   //TESTE
+    char comando[128]; //guarda o comando inserido pelo utilizador
     int i = 0;
 
 
@@ -47,15 +46,25 @@ int main(void)
     struct 
     {
         int key;
-        char IP[bigchar];
-        char next_server[bigchar];
-        char next2_server[bigchar];
+        char ipe[bigchar];               //read as IPê
+        int porto;
+        struct server *next;
+        struct server *next2;
     } server;
+
 
     // Variáveis do servidor udp
     struct addrinfo udphints, *udpres;
     int udpfd;
     ssize_t nread;
+
+    //Se na chamada do programa
+    if(argc != 3){
+        printf("ERRO.\nInicialização inválida, volte a correr o programa!\n");
+        exit(0);
+    } 
+
+
 
     // Cria socket TCP
     if ((fd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
@@ -133,12 +142,11 @@ int main(void)
             if (strcmp(comando, "new") == 0)
             {
                 printf("Escolheu: new\n");
-                while (token != NULL)
-                {
-                    token = strtok(NULL, s);
-                    printf("token %d: %s\n", i, token);
-                    i++;
-                }
+
+                token = strtok(NULL, s);
+                printf("token %d: %s\n", i, token);
+
+                
             }
             else if (strcmp(comando, "entry") == 0)
             {
