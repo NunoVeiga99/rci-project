@@ -16,6 +16,17 @@
 #define smallchar 5
 #define bigchar 100
 
+    //Struct para guardar informações do servidor
+    struct server
+    {
+        int key;
+        char ipe[bigchar];               //read as IPê
+        char porto[bigchar];
+        struct server *next;
+        struct server *next2;
+    } ;
+
+
 int main(int argc, char*argv[])
 {
     int fd, newfd, afd = 0;
@@ -27,6 +38,11 @@ int main(int argc, char*argv[])
     } state;
 
     int maxfd, counter;
+    
+    //Inicializa o servidor
+    struct server *servidor;
+    servidor->next = NULL;
+    servidor->next2 = NULL;
 
     const char s[2] = " "; //para procurar por espaços, usado no menu
     char *token;           //para guardar numa string o resto da string que se está a usar (menu)
@@ -40,17 +56,7 @@ int main(int argc, char*argv[])
     char *ptr, buffer[128];
     char comando[128]; //guarda o comando inserido pelo utilizador
     int i = 0;
-
-
-    //Struct para guardar informações do servidor
-    struct 
-    {
-        int key;
-        char ipe[bigchar];               //read as IPê
-        int porto;
-        struct server *next;
-        struct server *next2;
-    } server;
+    int key=0;    
 
 
     // Variáveis do servidor udp
@@ -62,8 +68,14 @@ int main(int argc, char*argv[])
     if(argc != 3){
         printf("ERRO.\nInicialização inválida, volte a correr o programa!\n");
         exit(0);
-    } 
+    }
 
+    //Guarda o ip e o porto na estrutura
+    strcpy(servidor->ipe, argv[1]); 
+    printf("IP: %s\n", servidor->ipe);
+    //servidor->porto = atoi(argv[2]);
+    strcpy(servidor->porto, argv[2]); 
+    printf("Porto: %s\n", servidor->porto);
 
 
     // Cria socket TCP
@@ -75,7 +87,7 @@ int main(int argc, char*argv[])
     hints.ai_flags = AI_PASSIVE;
 
     //Obtém o o endereço e atribui um porto ao servidor TCP
-    if ((errcode = getaddrinfo(NULL, "58001", &hints, &res)) != 0) /*error*/
+    if ((errcode = getaddrinfo(servidor->ipe, servidor->porto , &hints, &res)) != 0) /*error*/
         exit(1);
 
     //bind e listen TCP
@@ -93,7 +105,7 @@ int main(int argc, char*argv[])
     udphints.ai_flags = AI_PASSIVE;
 
     //Obtém endereço e atribui porto ao servidor UDP
-    if ((errcode = getaddrinfo(NULL, "58001", &udphints, &udpres)) != 0) /*error*/
+    if ((errcode = getaddrinfo(NULL, servidor->porto, &udphints, &udpres)) != 0) /*error*/
         exit(1);
 
     //bind UDP
@@ -130,8 +142,9 @@ int main(int argc, char*argv[])
         //É dentro deste if que se lê o input do utilizador
         if (FD_ISSET(0, &rfds))
         {
-            printf("Insira um comando:\n");
-            fflush(stdout);
+
+            //printf("Insira um comando:\n");  
+            //fflush(stdout);          
             //scanf("%s", comando);
             fgets(comando, 128, stdin); //receber input do teclado
 
@@ -142,19 +155,32 @@ int main(int argc, char*argv[])
             if (strcmp(comando, "new") == 0)
             {
                 printf("Escolheu: new\n");
-
                 token = strtok(NULL, s);
                 printf("token %d: %s\n", i, token);
 
+                servidor->key  = atoi(token);
+                printf("A chave escolhida é: %d\n", servidor->key);
                 
             }
             else if (strcmp(comando, "entry") == 0)
             {
                 printf("Escolheu: entry\n");
+
             }
             else if (strcmp(comando, "sentry") == 0)
             {
                 printf("Escolheu: sentry\n");
+                /*
+                while(token!=NULL)
+                {
+                    
+                    
+                }
+                */
+            //strcpy(servidor->next->ipe,argv[2]);
+            //printf("Succ ip: %s", servidor->next->ipe);
+
+
             }
             else if (strcmp(comando, "leave\n") == 0)
             {
@@ -248,4 +274,19 @@ int main(int argc, char*argv[])
         }
     } //while(1)
     /*close(fd);exit(0);*/
+}
+
+
+int countspace(char *s,char c)
+{
+    int i,count=0;
+
+    for(i=0;s[i];i++)  
+    {
+    	if(s[i]==c)
+    	{
+          count++;
+		}
+ 	}
+ 	return count;    		  
 }
