@@ -24,7 +24,7 @@ struct server
     char porto[bigchar];
     struct server *next;
     struct server *next2;
-};
+}server;
 
 
 int countspace(char *s, char c)
@@ -55,29 +55,39 @@ int main(int argc, char *argv[])
     int maxfd, counter;
 
     //Inicializa o servidor
-    struct server *servidor;
+    //Aloca memória 
+    struct server *servidor = (struct server *)malloc(sizeof(server));
+    servidor->next = (struct server *)malloc(sizeof(server));
+    servidor->next2 = (struct server *)malloc(sizeof(server));
+    
 
     const char s[2] = " "; //para procurar por espaços, usado no menu
     char *token;           //para guardar numa string o resto da string que se está a usar (menu)
     char c = ' ';
 
-    // Variáveis do servidor TCP
+    //VARIÁVEIS do servidor TCP
     struct addrinfo hints, *res;
     int errcode;
     ssize_t n, nw;
     struct sockaddr_in addr;
     socklen_t addrlen;
     char *ptr, buffer[128];
+    char *send, message[128];
+
+    //VARIÁVEIS do comandoos de utilização ou iterações
     char comando[128]; //guarda o comando inserido pelo utilizador
     char comandofull[128]; //guarda o comando inserido pelo utilizador e NÃO O ALTERA
     int i = 0;
     int key = 0;
     int count = 0; //conta o num. de espaços no menu (entry e sentry)
 
-    // Variáveis do servidor udp
+    //VARIÁVEIS do servidor udp
     struct addrinfo udphints, *udpres;
     int udpfd;
     ssize_t nread;
+
+    //VARIÁVEIS de cliente TCP
+    ssize_t nbytes,nleft,nwritten;
 
     //Se na chamada do programa
     if (argc != 3)
@@ -85,6 +95,7 @@ int main(int argc, char *argv[])
         printf("ERRO.\nInicialização inválida, volte a correr o programa!\n");
         exit(0);
     }
+  
 
     //Guarda o ip e o porto na estrutura
     strcpy(servidor->ipe, argv[1]);
@@ -92,7 +103,7 @@ int main(int argc, char *argv[])
     //servidor->porto = atoi(argv[2]);
     strcpy(servidor->porto, argv[2]);
     printf("Porto: %s\n", servidor->porto);
-    
+
 
     // Cria socket TCP
     if ((fd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
@@ -173,11 +184,26 @@ int main(int argc, char *argv[])
             if (strcmp(comando, "new") == 0)
             {
                 printf("Escolheu: new\n");
-                token = strtok(NULL, s);
+                token = strtok(NULL, s);            //é o token que vai lendo as coisas SEGUINTES
                 printf("token %d: %s\n", i, token);
 
                 servidor->key = atoi(token);
                 printf("A chave escolhida é: %d\n", servidor->key);
+
+                servidor->next->key = atoi(token);
+                printf("A chave do sucessor é: %d\n", servidor->next->key);
+                strcpy(servidor->next->ipe, argv[1]);
+                printf("Sucessor ip: %s\n", servidor->next->ipe);
+                strcpy(servidor->next->porto, argv[2]);
+                printf("Sucessor porto: %s\n", servidor->next->porto);
+
+                servidor->next2->key = atoi(token);
+                printf("A chave do sucessor 2 é: %d\n", servidor->next2->key);
+                strcpy(servidor->next2->ipe, argv[1]);
+                printf("Sucessor 2 IP: %s\n", servidor->next2->ipe);
+                strcpy(servidor->next2->porto, argv[2]);
+                printf("Sucessor 2 porto: %s\n", servidor->next2->porto);
+
             }
             else if (strcmp(comando, "entry") == 0)
             {
@@ -191,15 +217,59 @@ int main(int argc, char *argv[])
                 //printf("token: %s \n", comandofull);
                 //printf("character '%c' occurs %d times \n ", c, count);
 
+                token = strtok(NULL, s);     //não é preciso guardar, só é preciso passar à frente (duvida, confirmar)
+                servidor->key = atoi(token);
+
+                token = strtok(NULL, s);                
+                servidor->next->key = atoi(token);
+
+                token = strtok(NULL, s);                
+                strcpy(servidor->next->ipe, token);
+
+                token = strtok(NULL, s);                
+                strcpy(servidor->next->porto, token);
+
+
+                //Connect TCP
+
+                n=getaddrinfo(servidor->next->ipe, servidor->next->porto,&hints,&res);      //Obtem os endereços do sucessor
+                if(n!=0)/*error*/exit(1);
+                n=connect(fd,res->ai_addr,res->ai_addrlen);         //Conecta ao sucessor
+                if(n==-1)/*error*/exit(1);
+
+                send = strcpy(buffer,"SUCCCONF\n");     //Informa ao sucessor que a configuração foi bem feita
+
+                nleft=nbytes;
+
+                //Envia a mensagem (write)
+                while(nleft>0){nwritten=write(fd,send,nleft);
+                if(nwritten<=0)/*error*/exit(1);
+                nleft-=nwritten;
+                send+=nwritten;}
+                nleft=nbytes; send=message;
+                
+                //read (receive echo)
+                while(nleft>0){nread=read(fd,send,nleft);
+                if(nread==-1)/*error*/exit(1);
+                else if(nread==0)break;//closed by peer
+                nleft-=nread;
+                send+=nread;}
+                nread=nbytes-nleft;
+
+                write(1,"echo: ",6);//stdout
+                write(1,message,nread);
+
                 /*
                 while(token!=NULL)
                 {
                     
                     
-                }
-                */
+                }*/
+                
                 //strcpy(servidor->next->ipe,argv[2]);
                 //printf("Succ ip: %s", servidor->next->ipe);
+
+                
             }
             else if (strcmp(comando, "leave\n") == 0)
             {
@@ -208,6 +278,20 @@ int main(int argc, char *argv[])
             else if (strcmp(comando, "show\n") == 0)
             {
                 printf("Escolheu: show\n");
+
+                printf("Chave do servidor:%d \n", servidor->key);
+                printf("Endereço IP:%s \n", servidor->ipe);
+                printf("Porto:%s \n", servidor->porto);
+
+                printf("\n INFORMAÇÕES DO SUCESSOR \n");
+                printf("Chave do succ:%d \n", servidor->next->key);
+                printf("Endereço IP succ:%s \n", servidor->next->ipe);
+                printf("Porto succ:%s \n", servidor->next->porto);
+
+                printf("\n INFORMAÇÕES DO SEGUNDO SUCESSOR \n");
+                printf("Chave do succ2:%d \n", servidor->next2->key);
+                printf("Endereço IP succ2:%s \n", servidor->next2->ipe);
+                printf("Porto succ2:%s \n", servidor->next2->porto);
             }
             else if (strcmp(comando, "find") == 0)
             {
