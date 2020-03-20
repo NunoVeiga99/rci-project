@@ -219,23 +219,26 @@ int main(int argc, char *argv[])
 
                 token = strtok(NULL, s);     //não é preciso guardar, só é preciso passar à frente (duvida, confirmar)
                 servidor->key = atoi(token);
+                printf("A chave escolhida é: %d\n", servidor->key);
 
                 token = strtok(NULL, s);                
                 servidor->next->key = atoi(token);
+                printf("A chave do sucessor é: %d\n", servidor->next->key);
 
                 token = strtok(NULL, s);                
                 strcpy(servidor->next->ipe, token);
+                printf("Sucessor ip: %s\n", servidor->next->ipe);
 
                 token = strtok(NULL, s);                
                 strcpy(servidor->next->porto, token);
+                printf("Sucessor porto: %s\n", servidor->next->porto);
 
 
                 //Connect TCP
-
                 n=getaddrinfo(servidor->next->ipe, servidor->next->porto,&hints,&res);      //Obtem os endereços do sucessor
-                if(n!=0)/*error*/exit(1);
+                if(n!=0)/*error*/{perror("ERRO1:");}
                 n=connect(fd,res->ai_addr,res->ai_addrlen);         //Conecta ao sucessor
-                if(n==-1)/*error*/exit(1);
+                if(n==-1)/*error*/{perror("ERRO2:");}
 
                 send = strcpy(buffer,"SUCCCONF\n");     //Informa ao sucessor que a configuração foi bem feita
 
