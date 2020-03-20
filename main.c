@@ -26,7 +26,7 @@ struct server
     struct server *next2;
 } server;
 
-int sendmessage(int fd, char *message, char *ip, char *porto)
+int sendmessage(int fd, char message[128], char ip[128], char porto[128])
 {
 
     struct addrinfo hints, *res;
@@ -42,12 +42,17 @@ int sendmessage(int fd, char *message, char *ip, char *porto)
     hints.ai_socktype = SOCK_STREAM; //TCP socket
 
     n = getaddrinfo(ip, porto, &hints, &res);
-    if (n != 0) /*error*/
+    if (n != 0) /*error*/{
+        fprintf(stderr, "ERRO1: %s\n", gai_strerror(n));
         exit(1);
+    }
+    
     n = connect(fd, res->ai_addr, res->ai_addrlen);
-    if (n == -1) /*error*/
+    if (n == -1) /*error*/{
+        fprintf(stderr, "ERRO2: %s\n", gai_strerror(n));
         exit(1);
-
+    }
+             
     ptr = strcpy(buffer, message);
     nbytes = 7;
 
@@ -260,6 +265,7 @@ int main(int argc, char *argv[])
             {
                 printf("Escolheu: sentry\n");
 
+                //sfd
                 FD_SET(sfd, &rfds);
 
                 //count = countspace(comandofull, c);
@@ -282,14 +288,17 @@ int main(int argc, char *argv[])
                 strcpy(servidor->next->porto, token);
                 printf("Sucessor porto: %s\n", servidor->next->porto);
 
-                //Connect TCP
+
+                sfd = sendmessage(sfd, "SUCCONF\n", servidor->next->ipe, servidor->next->porto);
+
+               /*            
                 n = getaddrinfo(servidor->next->ipe, servidor->next->porto, &hints, &res); //Obtem os endereços do sucessor
-                if (n != 0)                                                                /*error*/
+                if (n != 0)                                                                //error
                 {
                     perror("ERRO1:");
                 }
                 n = connect(fd, res->ai_addr, res->ai_addrlen); //Conecta ao sucessor
-                if (n == -1)                                    /*error*/
+                if (n == -1)                                    //error
                 {
                     perror("ERRO2:");
                 }
@@ -302,7 +311,7 @@ int main(int argc, char *argv[])
                 while (nleft > 0)
                 {
                     nwritten = write(fd, send, nleft);
-                    if (nwritten <= 0) /*error*/
+                    if (nwritten <= 0) //error
                         exit(1);
                     nleft -= nwritten;
                     send += nwritten;
@@ -314,7 +323,7 @@ int main(int argc, char *argv[])
                 while (nleft > 0)
                 {
                     nread = read(fd, send, nleft);
-                    if (nread == -1) /*error*/
+                    if (nread == -1) //error
                         exit(1);
                     else if (nread == 0)
                         break; //closed by peer
@@ -325,7 +334,7 @@ int main(int argc, char *argv[])
 
                 write(1, "echo: ", 6); //stdout
                 write(1, message, nread);
-
+                */
                 /*
                 while(token!=NULL)
                 {
