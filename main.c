@@ -291,59 +291,7 @@ int main(int argc, char *argv[])
 
                 sfd = sendmessage(sfd, "SUCCONF\n", servidor->next->ipe, servidor->next->porto);
 
-               /*            
-                n = getaddrinfo(servidor->next->ipe, servidor->next->porto, &hints, &res); //Obtem os endereços do sucessor
-                if (n != 0)                                                                //error
-                {
-                    perror("ERRO1:");
-                }
-                n = connect(fd, res->ai_addr, res->ai_addrlen); //Conecta ao sucessor
-                if (n == -1)                                    //error
-                {
-                    perror("ERRO2:");
-                }
-
-                send = strcpy(buffer, "SUCCCONF\n"); //Informa ao sucessor que a configuração foi bem feita
-
-                nleft = nbytes;
-
-                //Envia a mensagem (write)
-                while (nleft > 0)
-                {
-                    nwritten = write(fd, send, nleft);
-                    if (nwritten <= 0) //error
-                        exit(1);
-                    nleft -= nwritten;
-                    send += nwritten;
-                }
-                nleft = nbytes;
-                send = message;
-
-                //read (receive echo)
-                while (nleft > 0)
-                {
-                    nread = read(fd, send, nleft);
-                    if (nread == -1) //error
-                        exit(1);
-                    else if (nread == 0)
-                        break; //closed by peer
-                    nleft -= nread;
-                    send += nread;
-                }
-                nread = nbytes - nleft;
-
-                write(1, "echo: ", 6); //stdout
-                write(1, message, nread);
-                */
-                /*
-                while(token!=NULL)
-                {
-                    
-                    
-                }*/
-
-                //strcpy(servidor->next->ipe,argv[2]);
-                //printf("Succ ip: %s", servidor->next->ipe);
+               
             }
             else if (strcmp(comando, "leave\n") == 0)
             {
