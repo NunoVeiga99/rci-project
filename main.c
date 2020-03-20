@@ -24,50 +24,60 @@ struct server
     char porto[bigchar];
     struct server *next;
     struct server *next2;
-}server;
+} server;
 
-int sendmessage(int fd, char* message, char* ip , char* porto){
+int sendmessage(int fd, char *message, char *ip, char *porto)
+{
 
-struct addrinfo hints,*res;
-int n;
-ssize_t nbytes,nleft,nwritten,nread;
-char *ptr,buffer[128];
+    struct addrinfo hints, *res;
+    int n;
+    ssize_t nbytes, nleft, nwritten, nread;
+    char *ptr, buffer[128];
 
+    fd = socket(AF_INET, SOCK_STREAM, 0); //TCP socket
+    if (fd == -1)
+        exit(1); //error
+    memset(&hints, 0, sizeof hints);
+    hints.ai_family = AF_INET;       //IPv4
+    hints.ai_socktype = SOCK_STREAM; //TCP socket
 
-fd=socket(AF_INET,SOCK_STREAM,0);//TCP socket
-if(fd==-1)exit(1);//error
-memset(&hints,0,sizeof hints);
-hints.ai_family=AF_INET;//IPv4
-hints.ai_socktype=SOCK_STREAM;//TCP socket
+    n = getaddrinfo(ip, porto, &hints, &res);
+    if (n != 0) /*error*/
+        exit(1);
+    n = connect(fd, res->ai_addr, res->ai_addrlen);
+    if (n == -1) /*error*/
+        exit(1);
 
-n=getaddrinfo(ip,porto,&hints,&res);
-if(n!=0)/*error*/exit(1);
-n=connect(fd,res->ai_addr,res->ai_addrlen);
-if(n==-1)/*error*/exit(1);
+    ptr = strcpy(buffer, message);
+    nbytes = 7;
 
-ptr=strcpy(buffer,message);
-nbytes=7;
-
-nleft=nbytes;
-while(nleft>0){nwritten=write(fd,ptr,nleft);
-if(nwritten<=0)/*error*/exit(1);
-nleft-=nwritten;
-ptr+=nwritten;}
-nleft=nbytes; ptr=buffer;
-while(nleft>0){nread=read(fd,ptr,nleft);
-if(nread==-1)/*error*/exit(1);
-else if(nread==0)break;//closed by peer
-nleft-=nread;
-ptr+=nread;}
-nread=nbytes-nleft;
-close(fd);
-write(1,"echo: ",6);//stdout
-write(1,buffer,nread);
-return fd;
-
+    nleft = nbytes;
+    while (nleft > 0)
+    {
+        nwritten = write(fd, ptr, nleft);
+        if (nwritten <= 0) /*error*/
+            exit(1);
+        nleft -= nwritten;
+        ptr += nwritten;
+    }
+    nleft = nbytes;
+    ptr = buffer;
+    while (nleft > 0)
+    {
+        nread = read(fd, ptr, nleft);
+        if (nread == -1) /*error*/
+            exit(1);
+        else if (nread == 0)
+            break; //closed by peer
+        nleft -= nread;
+        ptr += nread;
+    }
+    nread = nbytes - nleft;
+    close(fd);
+    write(1, "echo: ", 6); //stdout
+    write(1, buffer, nread);
+    return fd;
 }
-
-
 
 int countspace(char *s, char c)
 {
@@ -83,10 +93,9 @@ int countspace(char *s, char c)
     return count;
 }
 
-
 int main(int argc, char *argv[])
 {
-    int fd, newfd,sfd, afd = 0;
+    int fd, newfd, sfd, afd = 0;
     fd_set rfds;
     enum
     {
@@ -97,11 +106,10 @@ int main(int argc, char *argv[])
     int maxfd, counter;
 
     //Inicializa o servidor
-    //Aloca memória 
+    //Aloca memória
     struct server *servidor = (struct server *)malloc(sizeof(server));
     servidor->next = (struct server *)malloc(sizeof(server));
     servidor->next2 = (struct server *)malloc(sizeof(server));
-    
 
     const char s[2] = " "; //para procurar por espaços, usado no menu
     char *token;           //para guardar numa string o resto da string que se está a usar (menu)
@@ -117,7 +125,7 @@ int main(int argc, char *argv[])
     char *send, message[128];
 
     //VARIÁVEIS do comandoos de utilização ou iterações
-    char comando[128]; //guarda o comando inserido pelo utilizador
+    char comando[128];     //guarda o comando inserido pelo utilizador
     char comandofull[128]; //guarda o comando inserido pelo utilizador e NÃO O ALTERA
     int i = 0;
     int key = 0;
@@ -129,7 +137,7 @@ int main(int argc, char *argv[])
     ssize_t nread;
 
     //VARIÁVEIS de cliente TCP
-    ssize_t nbytes,nleft,nwritten;
+    ssize_t nbytes, nleft, nwritten;
 
     //Se na chamada do programa
     if (argc != 3)
@@ -137,7 +145,6 @@ int main(int argc, char *argv[])
         printf("ERRO.\nInicialização inválida, volte a correr o programa!\n");
         exit(0);
     }
-  
 
     //Guarda o ip e o porto na estrutura
     strcpy(servidor->ipe, argv[1]);
@@ -145,7 +152,6 @@ int main(int argc, char *argv[])
     //servidor->porto = atoi(argv[2]);
     strcpy(servidor->porto, argv[2]);
     printf("Porto: %s\n", servidor->porto);
-
 
     // Cria socket TCP
     if ((fd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
@@ -226,7 +232,7 @@ int main(int argc, char *argv[])
             if (strcmp(comando, "new") == 0)
             {
                 printf("Escolheu: new\n");
-                token = strtok(NULL, s);            //é o token que vai lendo as coisas SEGUINTES
+                token = strtok(NULL, s); //é o token que vai lendo as coisas SEGUINTES
                 printf("token %d: %s\n", i, token);
 
                 servidor->key = atoi(token);
@@ -245,7 +251,6 @@ int main(int argc, char *argv[])
                 printf("Sucessor 2 IP: %s\n", servidor->next2->ipe);
                 strcpy(servidor->next2->porto, argv[2]);
                 printf("Sucessor 2 porto: %s\n", servidor->next2->porto);
-
             }
             else if (strcmp(comando, "entry") == 0)
             {
@@ -261,56 +266,65 @@ int main(int argc, char *argv[])
                 //printf("token: %s \n", comandofull);
                 //printf("character '%c' occurs %d times \n ", c, count);
 
-                token = strtok(NULL, s);     //não é preciso guardar, só é preciso passar à frente (duvida, confirmar)
+                token = strtok(NULL, s); //não é preciso guardar, só é preciso passar à frente (duvida, confirmar)
                 servidor->key = atoi(token);
                 printf("A chave escolhida é: %d\n", servidor->key);
 
-                token = strtok(NULL, s);                
+                token = strtok(NULL, s);
                 servidor->next->key = atoi(token);
                 printf("A chave do sucessor é: %d\n", servidor->next->key);
 
-                token = strtok(NULL, s);                
+                token = strtok(NULL, s);
                 strcpy(servidor->next->ipe, token);
                 printf("Sucessor ip: %s\n", servidor->next->ipe);
 
-                token = strtok(NULL, s);                
+                token = strtok(NULL, s);
                 strcpy(servidor->next->porto, token);
                 printf("Sucessor porto: %s\n", servidor->next->porto);
 
-
                 //Connect TCP
-                n=getaddrinfo(servidor->next->ipe, servidor->next->porto,&hints,&res);      //Obtem os endereços do sucessor
-<<<<<<< HEAD
-                if(n!=0)/*error*/{ perror("Erro"); exit(1);}
-                n=connect(fd,res->ai_addr,res->ai_addrlen);         //Conecta ao sucessor
-                if(n==-1)/*error*/{perror("Erro");exit(1);}
-=======
-                if(n!=0)/*error*/{perror("ERRO1:");}
-                n=connect(fd,res->ai_addr,res->ai_addrlen);         //Conecta ao sucessor
-                if(n==-1)/*error*/{perror("ERRO2:");}
->>>>>>> 1427a671d2be81578e7855e8e0768645ef60a1db
+                n = getaddrinfo(servidor->next->ipe, servidor->next->porto, &hints, &res); //Obtem os endereços do sucessor
+                if (n != 0)                                                                /*error*/
+                {
+                    perror("ERRO1:");
+                }
+                n = connect(fd, res->ai_addr, res->ai_addrlen); //Conecta ao sucessor
+                if (n == -1)                                    /*error*/
+                {
+                    perror("ERRO2:");
+                }
 
-                send = strcpy(buffer,"SUCCCONF\n");     //Informa ao sucessor que a configuração foi bem feita
+                send = strcpy(buffer, "SUCCCONF\n"); //Informa ao sucessor que a configuração foi bem feita
 
-                nleft=nbytes;
+                nleft = nbytes;
 
                 //Envia a mensagem (write)
-                while(nleft>0){nwritten=write(fd,send,nleft);
-                if(nwritten<=0)/*error*/exit(1);
-                nleft-=nwritten;
-                send+=nwritten;}
-                nleft=nbytes; send=message;
-                
-                //read (receive echo)
-                while(nleft>0){nread=read(fd,send,nleft);
-                if(nread==-1)/*error*/exit(1);
-                else if(nread==0)break;//closed by peer
-                nleft-=nread;
-                send+=nread;}
-                nread=nbytes-nleft;
+                while (nleft > 0)
+                {
+                    nwritten = write(fd, send, nleft);
+                    if (nwritten <= 0) /*error*/
+                        exit(1);
+                    nleft -= nwritten;
+                    send += nwritten;
+                }
+                nleft = nbytes;
+                send = message;
 
-                write(1,"echo: ",6);//stdout
-                write(1,message,nread);
+                //read (receive echo)
+                while (nleft > 0)
+                {
+                    nread = read(fd, send, nleft);
+                    if (nread == -1) /*error*/
+                        exit(1);
+                    else if (nread == 0)
+                        break; //closed by peer
+                    nleft -= nread;
+                    send += nread;
+                }
+                nread = nbytes - nleft;
+
+                write(1, "echo: ", 6); //stdout
+                write(1, message, nread);
 
                 /*
                 while(token!=NULL)
@@ -318,11 +332,9 @@ int main(int argc, char *argv[])
                     
                     
                 }*/
-                
+
                 //strcpy(servidor->next->ipe,argv[2]);
                 //printf("Succ ip: %s", servidor->next->ipe);
-
-                
             }
             else if (strcmp(comando, "leave\n") == 0)
             {
