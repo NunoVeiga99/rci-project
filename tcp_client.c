@@ -8,6 +8,8 @@
 
 int main(void)
 {
+
+
 struct addrinfo hints,*res;
 int fd,n;
 ssize_t nbytes,nleft,nwritten,nread;
@@ -28,6 +30,7 @@ if(n==-1)/*error*/exit(1);
 ptr=strcpy(buffer,"Hello!\n");
 nbytes=7;
 
+
 nleft=nbytes;
 while(nleft>0){nwritten=write(fd,ptr,nleft);
 if(nwritten<=0)/*error*/exit(1);
@@ -43,6 +46,8 @@ nread=nbytes-nleft;
 close(fd);
 write(1,"echo: ",6);//stdout
 write(1,buffer,nread);
+
+
 exit(0);
 
 }

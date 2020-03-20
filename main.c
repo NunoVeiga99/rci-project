@@ -26,6 +26,53 @@ struct server
     struct server *next2;
 }server;
 
+int sendmessage(int fd, char* message, char* ip , char* porto){
+
+struct addrinfo hints,*res;
+int n;
+ssize_t nbytes,nleft,nwritten,nread;
+char *ptr,buffer[128];
+
+
+fd=socket(AF_INET,SOCK_STREAM,0);//TCP socket
+if(fd==-1)exit(1);//error
+memset(&hints,0,sizeof hints);
+hints.ai_family=AF_INET;//IPv4
+hints.ai_socktype=SOCK_STREAM;//TCP socket
+
+n=getaddrinfo(ip,porto,&hints,&res);
+if(n!=0)/*error*/exit(1);
+n=connect(fd,res->ai_addr,res->ai_addrlen);
+if(n==-1)/*error*/exit(1);
+
+ptr=strcpy(buffer,message);
+nbytes=7;
+
+nleft=nbytes;
+while(nleft>0){nwritten=write(fd,ptr,nleft);
+if(nwritten<=0)/*error*/exit(1);
+nleft-=nwritten;
+ptr+=nwritten;}
+nleft=nbytes; ptr=buffer;
+while(nleft>0){nread=read(fd,ptr,nleft);
+if(nread==-1)/*error*/exit(1);
+else if(nread==0)break;//closed by peer
+nleft-=nread;
+ptr+=nread;}
+nread=nbytes-nleft;
+close(fd);
+write(1,"echo: ",6);//stdout
+write(1,buffer,nread);
+return fd;
+
+}
+
+
+
+
+
+
+
 
 int countspace(char *s, char c)
 {
@@ -44,7 +91,7 @@ int countspace(char *s, char c)
 
 int main(int argc, char *argv[])
 {
-    int fd, newfd, afd = 0;
+    int fd, newfd,sfd, afd = 0;
     fd_set rfds;
     enum
     {
@@ -213,6 +260,8 @@ int main(int argc, char *argv[])
             {
                 printf("Escolheu: sentry\n");
 
+                FD_SET(sfd, &rfds);
+
                 //count = countspace(comandofull, c);
                 //printf("token: %s \n", comandofull);
                 //printf("character '%c' occurs %d times \n ", c, count);
@@ -231,11 +280,10 @@ int main(int argc, char *argv[])
 
 
                 //Connect TCP
-
                 n=getaddrinfo(servidor->next->ipe, servidor->next->porto,&hints,&res);      //Obtem os endereços do sucessor
-                if(n!=0)/*error*/exit(1);
+                if(n!=0)/*error*/{ perror("Erro"); exit(1);}
                 n=connect(fd,res->ai_addr,res->ai_addrlen);         //Conecta ao sucessor
-                if(n==-1)/*error*/exit(1);
+                if(n==-1)/*error*/{perror("Erro");exit(1);}
 
                 send = strcpy(buffer,"SUCCCONF\n");     //Informa ao sucessor que a configuração foi bem feita
 
