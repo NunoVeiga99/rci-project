@@ -54,7 +54,7 @@ int sendmessage(int fd, char message[128], char ip[128], char porto[128])
     }
              
     ptr = strcpy(buffer, message);
-    nbytes = 7;
+    nbytes = strlen(buffer);
 
     nleft = nbytes;
     while (nleft > 0)
@@ -81,6 +81,7 @@ int sendmessage(int fd, char message[128], char ip[128], char porto[128])
     close(fd);
     write(1, "echo: ", 6); //stdout
     write(1, buffer, nread);
+    write(1, "\n", 2);
     return fd;
 }
 
@@ -97,6 +98,7 @@ int countspace(char *s, char c)
     }
     return count;
 }
+
 
 int main(int argc, char *argv[])
 {
@@ -135,6 +137,9 @@ int main(int argc, char *argv[])
     int i = 0;
     int key = 0;
     int count = 0; //conta o num. de espaços no menu (entry e sentry)
+
+
+    char mensagem[128]; 
 
     //VARIÁVEIS do servidor udp
     struct addrinfo udphints, *udpres;
@@ -274,7 +279,7 @@ int main(int argc, char *argv[])
 
                 token = strtok(NULL, s); //não é preciso guardar, só é preciso passar à frente (duvida, confirmar)
                 servidor->key = atoi(token);
-                printf("A chave escolhida é: %d\n", servidor->key);
+                printf("A chave escolhmida é: %d\n", servidor->key);
 
                 token = strtok(NULL, s);
                 servidor->next->key = atoi(token);
@@ -291,6 +296,12 @@ int main(int argc, char *argv[])
 
                 sfd = sendmessage(sfd, "SUCCONF\n", servidor->next->ipe, servidor->next->porto);
 
+
+                snprintf(mensagem, 512, "NEW %d %s %s", servidor->key, servidor->ipe, servidor->porto);
+                printf("A MSG É: %s", mensagem);
+                
+                sfd = sendmessage(sfd, mensagem, servidor->next->ipe, servidor->next->porto);
+
                
             }
             else if (strcmp(comando, "leave\n") == 0)
@@ -305,12 +316,12 @@ int main(int argc, char *argv[])
                 printf("Endereço IP:%s \n", servidor->ipe);
                 printf("Porto:%s \n", servidor->porto);
 
-                printf("\n INFORMAÇÕES DO SUCESSOR \n");
+                printf("\nINFORMAÇÕES DO SUCESSOR \n");
                 printf("Chave do succ:%d \n", servidor->next->key);
                 printf("Endereço IP succ:%s \n", servidor->next->ipe);
                 printf("Porto succ:%s \n", servidor->next->porto);
 
-                printf("\n INFORMAÇÕES DO SEGUNDO SUCESSOR \n");
+                printf("\nINFORMAÇÕES DO SEGUNDO SUCESSOR \n");
                 printf("Chave do succ2:%d \n", servidor->next2->key);
                 printf("Endereço IP succ2:%s \n", servidor->next2->ipe);
                 printf("Porto succ2:%s \n", servidor->next2->porto);
@@ -352,7 +363,9 @@ int main(int argc, char *argv[])
                 }
             }
             write(1, "Mensagem tcp recebida: ", 24);
-            write(1, buffer, 7);
+            write(1, buffer, strlen(buffer));
+
+                
 
             //Esta parte do codigo ainda não sei para que é que serve, nem sei para que é o afd
             switch (state)
