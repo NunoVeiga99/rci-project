@@ -26,13 +26,10 @@ struct server
     struct server *next2;
 } server;
 
-int sendmessage(int fd, char message[128], char ip[128], char porto[128])
-{
+int create_TCP(char ip[128], char porto[128]){
 
     struct addrinfo hints, *res;
-    int n;
-    ssize_t nbytes, nleft, nwritten, nread;
-    char *ptr, buffer[128];
+    int n, fd;
 
     fd = socket(AF_INET, SOCK_STREAM, 0); //TCP socket
     if (fd == -1)
@@ -52,6 +49,17 @@ int sendmessage(int fd, char message[128], char ip[128], char porto[128])
         fprintf(stderr, "ERRO2: %s\n", gai_strerror(n));
         exit(1);
     }
+
+    return fd;
+
+}
+
+void sendmessageTCP(int fd, char message[128])
+{
+
+    ssize_t nbytes, nleft, nwritten, nread;
+    char *ptr, buffer[128];
+
              
     ptr = strcpy(buffer, message);
     nbytes = strlen(buffer);
@@ -78,11 +86,10 @@ int sendmessage(int fd, char message[128], char ip[128], char porto[128])
         ptr += nread;
     }
     nread = nbytes - nleft;
-    close(fd);
     write(1, "echo: ", 6); //stdout
     write(1, buffer, nread);
     write(1, "\n", 2);
-    return fd;
+
 }
 
 int countspace(char *s, char c)
@@ -102,7 +109,7 @@ int countspace(char *s, char c)
 
 int main(int argc, char *argv[])
 {
-    int fd, newfd, sfd, afd = 0;
+    int fd, newfd = -1, sfd, afd = 0;
     fd_set rfds;
     enum
     {
@@ -197,18 +204,18 @@ int main(int argc, char *argv[])
     if (bind(udpfd, udpres->ai_addr, udpres->ai_addrlen) == -1) /*error*/
         exit(1);
 
-    //Inicializa o "descritor"(?)
+    //Inicializa o "descritor"
     FD_ZERO(&rfds);
 
     state = idle; // idle = não está ocupado
 
     while (1)
     {
-        //input do utilizador
+        n = 0;
         FD_SET(0, &rfds);
         FD_SET(fd, &rfds);
         FD_SET(udpfd, &rfds);
-        maxfd = max(fd, udpfd);
+        maxfd = max(fd, afd);
 
         // Se está ocupado
         if (state == busy)
@@ -293,14 +300,13 @@ int main(int argc, char *argv[])
                 strcpy(servidor->next->porto, token);
                 printf("Sucessor porto: %s\n", servidor->next->porto);
 
-
-                sfd = sendmessage(sfd, "SUCCONF\n", servidor->next->ipe, servidor->next->porto);
-
-
+                sfd = create_TCP(servidor->next->ipe, servidor->next->porto);
+                sendmessageTCP(sfd, "SUCCONF\n");
+                
                 snprintf(mensagem, 512, "NEW %d %s %s", servidor->key, servidor->ipe, servidor->porto);
                 printf("A MSG É: %s", mensagem);
-                
-                sfd = sendmessage(sfd, mensagem, servidor->next->ipe, servidor->next->porto);
+
+                sendmessageTCP(sfd, mensagem);
 
                
             }
@@ -333,6 +339,9 @@ int main(int argc, char *argv[])
             else if (strcmp(comando, "exit\n") == 0)
             {
                 printf("Escolheu: exit\n");
+                close(fd);
+                close(afd);
+                exit(0);
             }
             else /* default: */
             {
@@ -344,30 +353,12 @@ int main(int argc, char *argv[])
         if (FD_ISSET(fd, &rfds))
         {
             addrlen = sizeof(addr);
+            
             //Aceita a conexão
             if ((newfd = accept(fd, (struct sockaddr *)&addr, &addrlen)) == -1) /*error*/
                 exit(1);
 
-            // Lê a mensagem
-            while ((n = read(newfd, buffer, 128)) != 0)
-            {
-                if (n == -1) /*error*/
-                    exit(1);
-                ptr = &buffer[0];
-                while (n > 0)
-                {
-                    if ((nw = write(newfd, ptr, n)) <= 0) /*error*/
-                        exit(1);
-                    n -= nw;
-                    ptr += nw;
-                }
-            }
-            write(1, "Mensagem tcp recebida: ", 24);
-            write(1, buffer, strlen(buffer));
-
-                
-
-            //Esta parte do codigo ainda não sei para que é que serve, nem sei para que é o afd
+            
             switch (state)
             {
             case idle:
@@ -375,7 +366,7 @@ int main(int argc, char *argv[])
                 state = busy;
                 break;
             case busy: /* ... */ //write “busy\n” in newfd
-                close(newfd);
+                //close(newfd);
                 break;
             }
         }
@@ -395,23 +386,37 @@ int main(int argc, char *argv[])
             write(1, buffer, 7);
         }
 
-        //Não sei para que é que serve o fucking afd mano (Pedro: EU NÃO PERCEBO NADA DISTO AHAHAHHAHA)
-        if (FD_ISSET(afd, &rfds))
+        //Receber mensagens de um servidor novo      
+        if (FD_ISSET(newfd, &rfds))
         {
-            if ((n = read(afd, buffer, 128)) != 0)
+            printf("newfd: %d\n", newfd);
+            if((n = read(newfd, buffer, 128)) != 0)
             {
+
                 if (n == -1) /*error*/
                     exit(1);
-                /* ... */ //write buffer in afd
+                ptr = &buffer[0];
+                while (n > 0)
+                {
+                    if ((nw = write(newfd, ptr, n)) <= 0) /*error*/
+                        exit(1);
+                    n -= nw;
+                    ptr += nw;
+                }
+                write(1, "Mensagem tcp recebida: ", 24);
+                write(1, buffer, strlen(buffer));
             }
             else
             {
-                close(afd);
+                //close(afd);
                 state = idle;
             } //connection closed by peer
+            
         }
+
     } //while(1)
     free(comando);
     free(comandofull);
-    /*close(fd);exit(0);*/
+    close(afd);
+    close(fd);exit(0);
 }
