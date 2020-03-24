@@ -24,6 +24,8 @@ struct server
     char porto[bigchar];
     struct server *next;
     struct server *next2;
+    int suc_fd;
+    int pre_fd;
 } server;
 
 int create_TCP(char ip[128], char porto[128]){
@@ -301,12 +303,13 @@ int main(int argc, char *argv[])
                 printf("Sucessor porto: %s\n", servidor->next->porto);
 
                 sfd = create_TCP(servidor->next->ipe, servidor->next->porto);
-                sendmessageTCP(sfd, "SUCCONF\n");
                 
                 snprintf(mensagem, 512, "NEW %d %s %s", servidor->key, servidor->ipe, servidor->porto);
                 printf("A MSG É: %s", mensagem);
-
                 sendmessageTCP(sfd, mensagem);
+
+                
+                //sendmessageTCP(sfd, "SUCCONF\n");
 
                
             }
@@ -405,6 +408,12 @@ int main(int argc, char *argv[])
                 }
                 write(1, "Mensagem tcp recebida: ", 24);
                 write(1, buffer, strlen(buffer));
+
+
+
+
+
+
             }
             else
             {
@@ -413,6 +422,29 @@ int main(int argc, char *argv[])
             } //connection closed by peer
             
         }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     } //while(1)
     free(comando);
