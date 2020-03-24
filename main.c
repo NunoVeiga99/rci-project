@@ -323,6 +323,7 @@ int main(int argc, char *argv[])
                 printf("Sucessor ip: %s\n", servidor->next->ipe);
 
                 token = strtok(NULL, s);
+                token[strlen(token)-1] = '\0';
                 strcpy(servidor->next->porto, token);
                 printf("Sucessor porto: %s\n", servidor->next->porto);
 
@@ -336,7 +337,6 @@ int main(int argc, char *argv[])
                 suc_fd = sfd;
                 ligacao->sucessor = 1;
 
-                //sendmessageTCP(sfd, "SUCCONF\n");
             }
             else if (strcmp(comando, "leave\n") == 0)
             {
@@ -506,8 +506,7 @@ int main(int argc, char *argv[])
                         strcpy(servidor->next->porto, token);
                         printf("Sucessor porto: %s\n", servidor->next->porto);
 
-                        ligacao->predecessor = 1;
-                        pre_fd = afd;
+                        
                         ligacao->sucessor = 1;
                         suc_fd = afd;
 
@@ -523,6 +522,8 @@ int main(int argc, char *argv[])
                 }
                 else if (strcmp(buffer, "SUCCONF\n") == 0)
                 {
+                    ligacao->predecessor = 1;
+                    pre_fd = afd;
                 }
             }
             else
