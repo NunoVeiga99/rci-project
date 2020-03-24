@@ -349,6 +349,7 @@ int main(int argc, char *argv[])
             else /* default: */
             {
                 printf("Erro, insira um comando válido\n");
+                //adhaskhdkasd
             }
         }
 
