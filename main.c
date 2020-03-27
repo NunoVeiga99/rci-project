@@ -66,7 +66,7 @@ int create_TCP(char ip[128], char porto[128])
     n = connect(fd, res->ai_addr, res->ai_addrlen);
     if (n == -1) /*error*/
     {
-        fprintf(stderr, "ERRO2: %s\n", gai_strerror(n));
+        fprintf(stderr, "ERRO2 connect: %s\n", gai_strerror(n));
         exit(1);
     }
 
@@ -90,8 +90,10 @@ void sendmessageTCP(int fd, char message[128])
     while (nleft > 0)
     {
         nwritten = write(fd, ptr, nleft); //manda a mensagem
-        if (nwritten <= 0)                /*error*/
-            exit(1);
+        if (nwritten <= 0){
+            fprintf(stderr, "ERRO1:\n");
+           exit(1); 
+        }                /*error*/
         nleft -= nwritten;
         ptr += nwritten;
     }
@@ -100,8 +102,11 @@ void sendmessageTCP(int fd, char message[128])
     while (nleft > 0)
     {
         nread = read(fd, ptr, nleft); //Recebe o eco
-        if (nread == -1)              /*error*/
+        if (nread == -1){
+            fprintf(stderr, "ERRO2 nread\n");
             exit(1);
+        }          /*error*/
+            
         else if (nread == 0)
             break; //closed by peer
         nleft -= nread;
@@ -217,7 +222,7 @@ int main(int argc, char *argv[])
     memset(&udphints, 0, sizeof udphints);
     udphints.ai_family = AF_INET;      //IPv4
     udphints.ai_socktype = SOCK_DGRAM; //UDP socket
-    //udphints.ai_flags = AI_PASSIVE;
+    udphints.ai_flags = AI_PASSIVE; 
 
     //Obtém endereço e atribui porto ao servidor UDP
     if ((errcode = getaddrinfo(NULL, servidor->porto, &udphints, &udpres)) != 0) /*error*/
@@ -230,16 +235,17 @@ int main(int argc, char *argv[])
 
     while (1)
     {
+        memset(buffer,0,sizeof(buffer));
 
         n = 0;
         //"limpa" os descritores
         FD_ZERO(&rfds);
 
         //iniciaiza os descritores que estão sempre on
-        FD_SET(0, &rfds);
-        FD_SET(fd, &rfds);
-        FD_SET(udpfd, &rfds);
-        maxfd = max(fd, udpfd);
+        FD_SET(0, &rfds);       //teclado
+        FD_SET(fd, &rfds);      //espera TCP
+        FD_SET(udpfd, &rfds);       //espera UDP
+        maxfd = max(fd, udpfd);     //vê o maximo dos fd
 
         if (ligacao->nova == 1)
         {
@@ -257,6 +263,7 @@ int main(int argc, char *argv[])
 
         // SELECT
         counter = select(maxfd + 1, &rfds, (fd_set *)NULL, (fd_set *)NULL, (struct timeval *)NULL);
+
         printf("counter: %d\n", counter);
 
         if (counter <= 0) /*error*/
@@ -330,8 +337,9 @@ int main(int argc, char *argv[])
                 sfd = create_TCP(servidor->next->ipe, servidor->next->porto);
 
                 snprintf(mensagem, 512, "NEW %d %s %s", servidor->key, servidor->ipe, servidor->porto);
-                printf("A MSG É: %s", mensagem);
+                printf("A MSG É: %s\n", mensagem);
                 sendmessageTCP(sfd, mensagem);
+                fprintf(stderr, "I will be printed immediately\n");
 
                 //Guarda informação de ligação com o sucessor
                 suc_fd = sfd;
@@ -381,11 +389,10 @@ int main(int argc, char *argv[])
         }
 
         //Canal com sucessor
-        if (FD_ISSET(suc_fd, &rfds))
+        if (FD_ISSET(suc_fd, &rfds))        //MENSAGEM DO SUCESSOR
         {
             if ((n = read(suc_fd, buffer, 128)) != 0)
             {
-
                 if (n == -1) //error
                     exit(1);
                 ptr = &buffer[0];
@@ -413,7 +420,32 @@ int main(int argc, char *argv[])
                     strcpy(servidor->next2->ipe, token);
 
                     token = strtok(NULL, s);
-                    strcpy(servidor->next2->porto, token);
+                    strcpy(servidor->next2->porto, token); 
+                }
+                else if (strcmp(buffer, "NEW") == 0)
+                {
+                    servidor->next2->key = servidor->next->key;
+                    strcpy(servidor->next2->ipe, servidor->next->ipe);
+                    strcpy(servidor->next2->porto, servidor->next->porto);
+
+                    token = strtok(NULL, s); //não é preciso guardar, só é preciso passar à frente
+                    servidor->next->key = atoi(token);
+
+                    token = strtok(NULL, s);
+                    strcpy(servidor->next->ipe, token);
+
+                    token = strtok(NULL, s);
+                    strcpy(servidor->next->porto, token);
+
+                    suc_fd = create_TCP(servidor->next->ipe,servidor->next->porto); 
+
+                    sendmessageTCP(suc_fd, "SUCCONF\n"); 
+
+                    snprintf(mensagem, 512, "SUCC %d %s %s", servidor->next->key, servidor->next->ipe, servidor->next->porto);
+                    sendmessageTCP(pre_fd, mensagem);
+
+                    
+
                 }
             }
         }
@@ -457,8 +489,9 @@ int main(int argc, char *argv[])
             write(1, buffer, 7);
         }
 
+
         //Receber mensagens de um servidor novo
-        if (FD_ISSET(afd, &rfds))
+        if (FD_ISSET(afd, &rfds))       //MENSAGENS DE FORA
         {
             printf("afd: %d\n", afd);
             
@@ -493,8 +526,10 @@ int main(int argc, char *argv[])
 
                 if (strcmp(buffer, "NEW") == 0)
                 {
+                        
                     if (servidor->key == servidor->next->key) //Se houver só um servidor no anel
                     {
+                        
                         token = strtok(NULL, s); //não é preciso guardar, só é preciso passar à frente (duvida, confirmar)
                         servidor->next->key = atoi(token);
 
@@ -506,30 +541,44 @@ int main(int argc, char *argv[])
                         strcpy(servidor->next->porto, token);
                         printf("Sucessor porto: %s\n", servidor->next->porto);
 
-                        
-                        ligacao->sucessor = 1;
-                        suc_fd = afd;
+                        ligacao->predecessor = 1;
+                        pre_fd = afd;
 
                         //Diz a quem entrou quem é o seu duplo sucessor
                         //Que neste caso vai ser ele próprio (por isso tem o next)
                         snprintf(mensagem, 512, "SUCC %d %s %s", servidor->next->key, servidor->next->ipe, servidor->next->porto);
                         printf("mensagemm enviada: %s", mensagem);
-                        sendmessageTCP(suc_fd, mensagem);
+                        sendmessageTCP(pre_fd, mensagem);
+
+                        suc_fd = create_TCP(servidor->next->ipe,servidor->next->porto); 
 
                         //snprintf(mensagem, 512, "SUCCCONF\n");
-                        //sendmessageTCP(servidor->suc_fd, mensagem);
+                        sendmessageTCP(suc_fd, "SUCCONF\n");
+                    }
+                    else
+                    {                    
+                        sendmessageTCP(pre_fd,buffer_full);
+
+                        pre_fd = afd;
+
+                        //Diz a quem entrou quem é o seu duplo sucessor
+                        //Que neste caso vai ser ele próprio (por isso tem o next)
+                        snprintf(mensagem, 512, "SUCC %d %s %s", servidor->next->key, servidor->next->ipe, servidor->next->porto);
+                        printf("mensagem enviada (NOVO ELSE): %s", mensagem);
+                        sendmessageTCP(pre_fd, mensagem);
+
                     }
                 }
                 else if (strcmp(buffer, "SUCCONF\n") == 0)
                 {
-                    ligacao->predecessor = 1;
+                    ligacao->predecessor = 1;       //significa que já tenho um predecessor
                     pre_fd = afd;
                 }
             }
             else
             {
                 close(afd);
-                ligacao->sucessor = 0;
+                //ligacao->sucessor = 0;
             } //connection closed by peer
         }
 
