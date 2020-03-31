@@ -46,7 +46,7 @@ int create_TCP(char ip[128], char porto[128])
 {
 
     struct addrinfo hints, *res;
-    int n, fd;
+    int n, fd, flags;
 
     fd = socket(AF_INET, SOCK_STREAM, 0); //TCP socket
     if (fd == -1)
@@ -69,6 +69,12 @@ int create_TCP(char ip[128], char porto[128])
         fprintf(stderr, "ERRO2 connect: %s\n", gai_strerror(n));
         exit(1);
     }
+
+    //Torna o server non-blocking
+    //flags = fcntl(fd, F_GETFL, 0);
+    //fcntl(fd, F_SETFL, flags | O_NONBLOCK);
+
+    freeaddrinfo(res);
 
     return fd;
 }
@@ -99,13 +105,15 @@ void sendmessageTCP(int fd, char message[128])
     }
     nleft = nbytes;
     ptr = buffer;
+    
+    /*
     while (nleft > 0)
     {
         nread = read(fd, ptr, nleft); //Recebe o eco
         if (nread == -1){
             fprintf(stderr, "ERRO2 nread\n");
             exit(1);
-        }          /*error*/
+        }          //error
             
         else if (nread == 0)
             break; //closed by peer
@@ -116,6 +124,7 @@ void sendmessageTCP(int fd, char message[128])
     write(1, "echo: ", 6); //stdout
     write(1, buffer, nread);
     write(1, "\n", 2);
+    */
 }
 
 int countspace(char *s, char c)
@@ -132,10 +141,13 @@ int countspace(char *s, char c)
     return count;
 }
 
+
+
+
 int main(int argc, char *argv[])
 {
 
-    int fd, newfd, sfd, afd;
+    int fd, newfd, sfd, afd, flags;
     int suc_fd = 0;
     int pre_fd = 0;
     fd_set rfds;
@@ -388,6 +400,27 @@ int main(int argc, char *argv[])
             }
         }
 
+         //Conexão TCP
+        if (FD_ISSET(fd, &rfds)) //receber TCP de alguem desconhecido
+        {
+            addrlen = sizeof(addr);
+
+            //Aceita a conexão
+            if ((newfd = accept(fd, (struct sockaddr *)&addr, &addrlen)) == -1) /*error*/
+                exit(1);
+
+            afd = newfd;
+
+            if(ligacao->nova == 0){
+                 ligacao->nova = 1;
+                 //break;
+            }else{
+                //close(newfd);
+                //break;
+            }    
+        }
+
+
         //Canal com sucessor
         if (FD_ISSET(suc_fd, &rfds))        //MENSAGEM DO SUCESSOR
         {
@@ -396,13 +429,15 @@ int main(int argc, char *argv[])
                 if (n == -1) //error
                     exit(1);
                 ptr = &buffer[0];
+                /*
                 while (n > 0)
-                {
+                { 
                     if ((nw = write(suc_fd, ptr, n)) <= 0) //error
                         exit(1);
                     n -= nw;
                     ptr += nw;
                 }
+                */
                 write(1, "Mensagem tcp recebida: ", 24);
                 write(1, buffer, strlen(buffer));
 
@@ -441,7 +476,7 @@ int main(int argc, char *argv[])
 
                     sendmessageTCP(suc_fd, "SUCCONF\n"); 
 
-                    snprintf(mensagem, 512, "SUCC %d %s %s", servidor->next->key, servidor->next->ipe, servidor->next->porto);
+                    snprintf(mensagem, 512, "SUCC %d %s %s\n", servidor->next->key, servidor->next->ipe, servidor->next->porto);
                     sendmessageTCP(pre_fd, mensagem);
 
                     
@@ -454,25 +489,6 @@ int main(int argc, char *argv[])
 
         }
 
-        //Conexão TCP
-        if (FD_ISSET(fd, &rfds)) //receber TCP de alguem desconhecido
-        {
-            addrlen = sizeof(addr);
-
-            //Aceita a conexão
-            if ((newfd = accept(fd, (struct sockaddr *)&addr, &addrlen)) == -1) /*error*/
-                exit(1);
-
-            
-            if(ligacao->nova == 0){
-                 afd = newfd;
-                 ligacao->nova = 1;
-                 //break;
-            }else{
-                close(newfd);
-                //break;
-            }    
-        }
 
         //Conexão UDP
         if (FD_ISSET(udpfd, &rfds)) //receber UDP de alguem desconhecido
@@ -493,6 +509,10 @@ int main(int argc, char *argv[])
         //Receber mensagens de um servidor novo
         if (FD_ISSET(afd, &rfds))       //MENSAGENS DE FORA
         {
+            //Torna o server non-blocking
+            //flags = fcntl(afd, F_GETFL, 0);
+            //fcntl(afd, F_SETFL, flags | O_NONBLOCK);    
+
             printf("afd: %d\n", afd);
             
             if ((n = read(afd, buffer, 128)) != 0)
@@ -504,13 +524,15 @@ int main(int argc, char *argv[])
                 }
 
                 ptr = &buffer[0];
+                /*
                 while (n > 0)
                 {
-                    if ((nw = write(afd, ptr, n)) <= 0) /*error*/
+                    if ((nw = write(afd, ptr, n)) <= 0) //error
                         exit(1);
                     n -= nw;
                     ptr += nw;
                 }
+                */
 
                 write(1, "Mensagem tcp recebida: ", 24);
                 write(1, buffer, strlen(buffer));
@@ -546,7 +568,7 @@ int main(int argc, char *argv[])
 
                         //Diz a quem entrou quem é o seu duplo sucessor
                         //Que neste caso vai ser ele próprio (por isso tem o next)
-                        snprintf(mensagem, 512, "SUCC %d %s %s", servidor->next->key, servidor->next->ipe, servidor->next->porto);
+                        snprintf(mensagem, 512, "SUCC %d %s %s\n", servidor->next->key, servidor->next->ipe, servidor->next->porto);
                         printf("mensagemm enviada: %s", mensagem);
                         sendmessageTCP(pre_fd, mensagem);
 
@@ -563,7 +585,7 @@ int main(int argc, char *argv[])
 
                         //Diz a quem entrou quem é o seu duplo sucessor
                         //Que neste caso vai ser ele próprio (por isso tem o next)
-                        snprintf(mensagem, 512, "SUCC %d %s %s", servidor->next->key, servidor->next->ipe, servidor->next->porto);
+                        snprintf(mensagem, 512, "SUCC %d %s %s\n", servidor->next->key, servidor->next->ipe, servidor->next->porto);
                         printf("mensagem enviada (NOVO ELSE): %s", mensagem);
                         sendmessageTCP(pre_fd, mensagem);
 
