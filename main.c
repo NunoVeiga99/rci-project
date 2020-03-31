@@ -523,6 +523,7 @@ int main(int argc, char *argv[])
             }
         }
 
+        
         if (FD_ISSET(pre_fd, &rfds))
         {
         }
@@ -609,17 +610,17 @@ int main(int argc, char *argv[])
                         printf("mensagemm enviada: %s", mensagem);
                         sendmessageTCP(pre_fd, mensagem);
 
+                        ligacao->sucessor = 1;
                         suc_fd = create_TCP(servidor->next->ipe, servidor->next->porto);
 
                         //snprintf(mensagem, 512, "SUCCCONF\n");
                         sendmessageTCP(suc_fd, "SUCCONF\n");
                     }
                     else
-                    {
+                    {       
                         sendmessageTCP(pre_fd, buffer_full);
 
                         pre_fd = afd;
-
                         //Diz a quem entrou quem é o seu duplo sucessor
                         //Que neste caso vai ser ele próprio (por isso tem o next)
                         snprintf(mensagem, 512, "SUCC %d %s %s", servidor->next->key, servidor->next->ipe, servidor->next->porto);
