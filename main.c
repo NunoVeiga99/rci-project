@@ -115,7 +115,7 @@ void sendmessageTCP(int fd, char message[128])
         {
             fprintf(stderr, "ERRO2 nread\n");
             exit(1);
-        } /*error*/
+        } //error
 
         else if (nread == 0)
             break; //closed by peer
@@ -349,7 +349,7 @@ int main(int argc, char *argv[])
 
                 sfd = create_TCP(servidor->next->ipe, servidor->next->porto);
 
-                snprintf(mensagem, 512, "NEW %d %s %s\n", servidor->key, servidor->ipe, servidor->porto);
+                snprintf(mensagem, 512, "NEW %d %s %s", servidor->key, servidor->ipe, servidor->porto);
                 printf("A MSG É: %s\n", mensagem);
                 sendmessageTCP(sfd, mensagem);
                 fprintf(stderr, "I will be printed immediately\n");
@@ -517,7 +517,7 @@ int main(int argc, char *argv[])
 
                     sendmessageTCP(suc_fd, "SUCCONF\n");
 
-                    snprintf(mensagem, 512, "SUCC %d %s %s\n", servidor->next->key, servidor->next->ipe, servidor->next->porto);
+                    snprintf(mensagem, 512, "SUCC %d %s %s", servidor->next->key, servidor->next->ipe, servidor->next->porto);
                     sendmessageTCP(pre_fd, mensagem);
                 }
             }
@@ -527,27 +527,6 @@ int main(int argc, char *argv[])
         {
         }
 
-        //Conexão TCP
-        if (FD_ISSET(fd, &rfds)) //receber TCP de alguem desconhecido
-        {
-            addrlen = sizeof(addr);
-
-            //Aceita a conexão
-            if ((newfd = accept(fd, (struct sockaddr *)&addr, &addrlen)) == -1) /*error*/
-                exit(1);
-
-            if (ligacao->nova == 0)
-            {
-                afd = newfd;
-                ligacao->nova = 1;
-                //break;
-            }
-            else
-            {
-                close(newfd);
-                //break;
-            }
-        }
 
         //Conexão UDP
         if (FD_ISSET(udpfd, &rfds)) //receber UDP de alguem desconhecido
@@ -626,7 +605,7 @@ int main(int argc, char *argv[])
 
                         //Diz a quem entrou quem é o seu duplo sucessor
                         //Que neste caso vai ser ele próprio (por isso tem o next)
-                        snprintf(mensagem, 512, "SUCC %d %s %s\n", servidor->next->key, servidor->next->ipe, servidor->next->porto);
+                        snprintf(mensagem, 512, "SUCC %d %s %s", servidor->next->key, servidor->next->ipe, servidor->next->porto);
                         printf("mensagemm enviada: %s", mensagem);
                         sendmessageTCP(pre_fd, mensagem);
 
@@ -643,7 +622,7 @@ int main(int argc, char *argv[])
 
                         //Diz a quem entrou quem é o seu duplo sucessor
                         //Que neste caso vai ser ele próprio (por isso tem o next)
-                        snprintf(mensagem, 512, "SUCC %d %s %s\n", servidor->next->key, servidor->next->ipe, servidor->next->porto);
+                        snprintf(mensagem, 512, "SUCC %d %s %s", servidor->next->key, servidor->next->ipe, servidor->next->porto);
                         printf("mensagem enviada (NOVO ELSE): %s", mensagem);
                         sendmessageTCP(pre_fd, mensagem);
                     }
