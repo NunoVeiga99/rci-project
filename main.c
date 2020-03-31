@@ -362,46 +362,21 @@ int main(int argc, char *argv[])
             {
                 printf("Escolheu: leave\n");
 
-                //Se tiver só 1 servidor
-                if (servidor->key == servidor->next->key)
-                {
-                    servidor->key = 0;
-                    suc_fd = 0;
-                    pre_fd = 0;
-                    strcpy(servidor->ipe, " ");
-                    strcpy(servidor->porto, " ");
+                suc_fd = -2;
+                pre_fd = -2;
 
-                    servidor->next->key = 0;
-                    strcpy(servidor->next->ipe, " ");
-                    strcpy(servidor->next->porto, " ");
+                servidor->key = 0;
 
-                    servidor->next2->key = 0;
-                    strcpy(servidor->next2->ipe, " ");
-                    strcpy(servidor->next2->porto, " ");
-                }
+                strcpy(servidor->ipe, " ");
+                strcpy(servidor->porto, " ");
 
-                else if (servidor->key == servidor->next2->key)
-                {
-                    snprintf(mensagem, 512, "NEW %d %s %s\n", servidor->next->key, servidor->next->ipe, servidor->next->porto);
-                    printf("mensagemm enviada ao predecessor: %s", mensagem);
-                    sendmessageTCP(pre_fd, mensagem);
-                    
-                    servidor->key = 0;
+                servidor->next->key = 0;
+                strcpy(servidor->next->ipe, " ");
+                strcpy(servidor->next->porto, " ");
 
-                    strcpy(servidor->ipe, " ");
-                    strcpy(servidor->porto, " ");
-
-                    servidor->next->key = 0;
-                    strcpy(servidor->next->ipe, " ");
-                    strcpy(servidor->next->porto, " ");
-
-                    servidor->next2->key = 0;
-                    strcpy(servidor->next2->ipe, " ");
-                    strcpy(servidor->next2->porto, " ");
-
-                    suc_fd = 0;
-                    pre_fd = 0;
-                }
+                servidor->next2->key = 0;
+                strcpy(servidor->next2->ipe, " ");
+                strcpy(servidor->next2->porto, " ");
             }
             else if (strcmp(comando, "show\n") == 0)
             {
@@ -489,7 +464,7 @@ int main(int argc, char *argv[])
 
                 if (strcmp(buffer, "SUCC") == 0)
                 {
-                    token = strtok(NULL, s); //não é preciso guardar, só é preciso passar à frente (duvida, confirmar)
+                    token = strtok(NULL, s); //não é preciso guardar, só é preciso passar à frente
                     servidor->next2->key = atoi(token);
 
                     token = strtok(NULL, s);
@@ -518,6 +493,32 @@ int main(int argc, char *argv[])
                     sendmessageTCP(suc_fd, "SUCCONF\n");
 
                     snprintf(mensagem, 512, "SUCC %d %s %s", servidor->next->key, servidor->next->ipe, servidor->next->porto);
+                    sendmessageTCP(pre_fd, mensagem);
+                }
+            }
+            else if (n == 0) //Caso não haja sucessor (o sucessor saiu)
+            {
+                close(suc_fd);
+
+                suc_fd = -2;
+
+                if (servidor->key == servidor->next2->key)
+                {
+                    servidor->next->key = servidor->key;
+                    strcpy(servidor->next->ipe, servidor->ipe);
+                    strcpy(servidor->next->porto, servidor->porto);
+                }
+                else
+                {
+                    suc_fd = create_TCP(servidor->next2->ipe, servidor->next2->porto);
+
+                    servidor->next->key = servidor->next2->key;
+                    strcpy(servidor->next->ipe, servidor->next2->ipe);
+                    strcpy(servidor->next->porto, servidor->next2->porto);
+
+                    sendmessageTCP(suc_fd, "SUCCCONF\n");
+
+                    snprintf(mensagem, 512, "SUCC %d %s %s\n", servidor->next->key, servidor->next->ipe, servidor->next->porto);
                     sendmessageTCP(pre_fd, mensagem);
                 }
             }
