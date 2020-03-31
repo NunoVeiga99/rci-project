@@ -337,7 +337,7 @@ int main(int argc, char *argv[])
 
                 sfd = create_TCP(servidor->next->ipe, servidor->next->porto);
 
-                snprintf(mensagem, 512, "NEW %d %s %s", servidor->key, servidor->ipe, servidor->porto);
+                snprintf(mensagem, 512, "NEW %d %s %s\n", servidor->key, servidor->ipe, servidor->porto);
                 printf("A MSG É: %s\n", mensagem);
                 sendmessageTCP(sfd, mensagem);
                 fprintf(stderr, "I will be printed immediately\n");
@@ -370,7 +370,7 @@ int main(int argc, char *argv[])
 
                 else if (servidor->key == servidor->next2->key)
                 {
-                    snprintf(mensagem, 512, "NEW %d %s %s", servidor->next->key, servidor->next->ipe, servidor->next->porto);
+                    snprintf(mensagem, 512, "NEW %d %s %s\n", servidor->next->key, servidor->next->ipe, servidor->next->porto);
                     printf("mensagemm enviada ao predecessor: %s", mensagem);
                     sendmessageTCP(pre_fd, mensagem);
                     
