@@ -349,6 +349,22 @@ int main(int argc, char *argv[])
             else if (strcmp(comando, "leave\n") == 0)
             {
                 printf("Escolheu: leave\n");
+
+                //Se tiver só 1 servidor
+                servidor->key = 0;
+                suc_fd = 0;
+                pre_fd = 0;
+                strcpy(servidor->ipe, " ");
+                strcpy(servidor->porto, " ");
+
+                servidor->next->key = 0;
+                strcpy(servidor->next->ipe, " ");
+                strcpy(servidor->next->porto, " ");
+
+                servidor->next2->key = 0;
+                strcpy(servidor->next2->ipe, " ");
+                strcpy(servidor->next2->porto, " ");
+                
             }
             else if (strcmp(comando, "show\n") == 0)
             {
