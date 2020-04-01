@@ -362,6 +362,8 @@ int main(int argc, char *argv[])
             {
                 printf("Escolheu: leave\n");
 
+                close(suc_fd);
+                close(pre_fd);
                 suc_fd = -2;
                 pre_fd = -2;
 
@@ -490,7 +492,7 @@ int main(int argc, char *argv[])
 
                     suc_fd = create_TCP(servidor->next->ipe, servidor->next->porto);
 
-                    sendmessageTCP(suc_fd, "SUCCONF\n");
+                    sendmessageTCP(suc_fd, "SUCCCONF\n");
 
                     snprintf(mensagem, 512, "SUCC %d %s %s", servidor->next->key, servidor->next->ipe, servidor->next->porto);
                     sendmessageTCP(pre_fd, mensagem);
@@ -510,23 +512,28 @@ int main(int argc, char *argv[])
                 }
                 else
                 {
-                    suc_fd = create_TCP(servidor->next2->ipe, servidor->next2->porto);
-
                     servidor->next->key = servidor->next2->key;
                     strcpy(servidor->next->ipe, servidor->next2->ipe);
                     strcpy(servidor->next->porto, servidor->next2->porto);
 
+                    suc_fd = create_TCP(servidor->next->ipe, servidor->next->porto);
+
                     sendmessageTCP(suc_fd, "SUCCCONF\n");
 
-                    snprintf(mensagem, 512, "SUCC %d %s %s\n", servidor->next->key, servidor->next->ipe, servidor->next->porto);
+                    snprintf(mensagem, 512, "SUCC %d %s %s", servidor->next->key, servidor->next->ipe, servidor->next->porto);
                     sendmessageTCP(pre_fd, mensagem);
                 }
             }
         }
-
+        
         
         if (FD_ISSET(pre_fd, &rfds))
         {
+            if ((n = read(pre_fd, buffer, 128)) == 0)
+            {
+                close(pre_fd);
+                ligacao->predecessor = 0;
+            }
         }
 
 
@@ -615,7 +622,7 @@ int main(int argc, char *argv[])
                         suc_fd = create_TCP(servidor->next->ipe, servidor->next->porto);
 
                         //snprintf(mensagem, 512, "SUCCCONF\n");
-                        sendmessageTCP(suc_fd, "SUCCONF\n");
+                        sendmessageTCP(suc_fd, "SUCCCONF\n");
                     }
                     else
                     {       
@@ -629,10 +636,14 @@ int main(int argc, char *argv[])
                         sendmessageTCP(pre_fd, mensagem);
                     }
                 }
-                else if (strcmp(buffer, "SUCCONF\n") == 0)
+                else if (strcmp(buffer, "SUCCCONF\n") == 0)
                 {
-                    ligacao->predecessor = 1; //significa que já tenho um predecessor
+                   
+                    ligacao->predecessor = 1;
                     pre_fd = afd;
+
+                    snprintf(mensagem, 512, "SUCC %d %s %s", servidor->next->key, servidor->next->ipe, servidor->next->porto);
+                    sendmessageTCP(pre_fd, mensagem);
                 }
             }
             else
