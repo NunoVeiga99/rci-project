@@ -16,6 +16,7 @@
 
 #define smallchar 5
 #define bigchar 100
+#define N 16            //número máximo de servidores num anel
 
 //Struct para guardar informações do servidor
 struct server
@@ -143,7 +144,11 @@ int countspace(char *s, char c)
     return count;
 }
 
-
+int distance(int k, int l)
+{
+    int result;
+    result = (l - k) % N;
+}
 
 
 int main(int argc, char *argv[])
@@ -186,6 +191,7 @@ int main(int argc, char *argv[])
     char comandofull[128]; //guarda o comando inserido pelo utilizador e NÃO O ALTERA
     int i = 0;
     int key = 0;
+    int key_k = -2;     //key para procurar no find 
     int count = 0; //conta o num. de espaços no menu (entry e sentry)
 
     char mensagem[128];
@@ -404,12 +410,25 @@ int main(int argc, char *argv[])
             else if (strcmp(comando, "find") == 0)
             {
                 printf("Escolheu: find\n");
+
+                token = strtok(NULL, s); //não é preciso guardar, só é preciso passar à frente
+                key_k = atoi(token);
+
+                if(distance(key_k, servidor->key) > distance(key_k, servidor->next->key))
+                {
+                    snprintf(mensagem, 512, "FND %d %d %s %s", key_k, servidor->key, servidor->ipe, servidor->porto);
+                    sendmessageTCP(suc_fd, mensagem);
+                }
+               //pensar se é preciso algum else
+
+
             }
             else if (strcmp(comando, "exit\n") == 0)
             {
                 printf("Escolheu: exit\n");
                 close(fd);
                 close(afd);
+                //TEMOS QUE FAZER FREES?
                 exit(0);
             }
             else /* default: */
