@@ -150,6 +150,11 @@ int distance(int k, int l)
 {
     int result;
     result = (l - k) % N;
+    if(result < 0){
+        result = N + result;
+    }
+
+    return result;
 }
 
 int main(int argc, char *argv[])
@@ -191,12 +196,20 @@ int main(int argc, char *argv[])
     char comando[128];     //guarda o comando inserido pelo utilizador
     char comandofull[128]; //guarda o comando inserido pelo utilizador e NÃO O ALTERA
     int i = 0;
-    int key = 0;
-    int key_k = -2;   //key para procurar no find
+    int key = 0;  
     int count = 0;    //conta o num. de espaços no menu (entry e sentry)
-    int key_original; //key para o server que mandou o pedido de find
 
     char mensagem[128];
+
+    //Variáveis do find
+    char ipe_find[128]; //ip do servidor que pede o find
+    char porto_find[128]; //porto do servidor que pede o find
+    char ipe_found[128]; //ipe do servidor que tem a chave
+    char porto_found[128]; //porto o servidor que tem a chave
+    int key_found = -1; // chave do servidor que tem a chave 
+    int find_fd = -2; //ligacao 
+    int key_k = -1;   //key para procurar no find
+    int key_original; //key para o server que mandou o pedido de find
 
     //VARIÁVEIS do servidor udp
     struct addrinfo udphints, *udpres;
@@ -418,7 +431,7 @@ int main(int argc, char *argv[])
                 token = strtok(NULL, s); //não é preciso guardar, só é preciso passar à frente
                 key_k = atoi(token);
 
-                if (distance(key_k, servidor->key) > distance(key_k, servidor->next->key))
+                if (distance(key_k, servidor->next->key) > distance(key_k, servidor->key))
                 {
                     snprintf(mensagem, 512, "FND %d %d %s %s", key_k, servidor->key, servidor->ipe, servidor->porto);
                     sendmessageTCP(suc_fd, mensagem);
@@ -566,17 +579,29 @@ int main(int argc, char *argv[])
 
                 if (strcmp(buffer, "FND") == 0)
                 {
-                    token = strtok(NULL, s); //não é preciso guardar, só é preciso passar à frente
+                    token = strtok(NULL, s); 
                     key_k = atoi(token);
 
-                    if (distance(key_k, servidor->key) > distance(key_k, servidor->next->key))
+                    if (distance(key_k, servidor->next->key) > distance(key_k, servidor->key))
                     {
-                        suc_fd = create_TCP(servidor->next->ipe, servidor->next->porto); //É NECESSÁRIO?
+                        //suc_fd = create_TCP(servidor->next->ipe, servidor->next->porto); //É NECESSÁRIO? Nop, não é
                         sendmessageTCP(suc_fd, buffer_full);
                     }
                     else
                     {
-                        //falta pensar
+                        token = strtok(NULL,s); // só para saltar á frente a key, que não interessa para este caso
+
+                        token = strtok(NULL, s);
+                        strcpy(ipe_find, token);
+
+                        token = strtok(NULL, s);
+                        strcpy(porto_find, token);
+
+                        find_fd = create_TCP(ipe_find,porto_find);
+                        snprintf(mensagem, 512, "KEY %d %d %s %s", key_k,servidor->next->key, servidor->next->ipe, servidor->next->porto);
+                        sendmessageTCP(find_fd,mensagem);
+                        
+
                     }
                 }
             }
@@ -702,6 +727,26 @@ int main(int argc, char *argv[])
 
                     snprintf(mensagem, 512, "SUCC %d %s %s", servidor->next->key, servidor->next->ipe, servidor->next->porto);
                     sendmessageTCP(pre_fd, mensagem);
+                }else if(strcmp(buffer, "KEY") == 0){
+                    
+
+                    token = strtok(NULL, s); //não é preciso guardar, só é preciso passar à frente (duvida, confirmar)
+                    key_k = atoi(token);
+
+                    token = strtok(NULL, s); //não é preciso guardar, só é preciso passar à frente (duvida, confirmar)
+                    key_found = atoi(token);
+
+                    token = strtok(NULL, s);
+                    strcpy(ipe_found, token);
+
+                    token = strtok(NULL, s);
+                    strcpy(porto_found, token);
+                    
+                    printf(" A chave %d foi encontrada\n", key_k);
+                    printf(" Encontra-se no servidor %d\nIP: %s\nPorto: %s", key_found, ipe_found, porto_found);
+                    printf("\n");
+
+
                 }
             }
             else
