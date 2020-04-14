@@ -499,6 +499,10 @@ int main(int argc, char *argv[])
                     snprintf(mensagem, 512, "FND %d %d %s %s", key_k, servidor->key, servidor->ipe, servidor->porto);
                     sendmessageTCP(suc_fd, mensagem);
                 }
+                else
+                {
+                    printf("O servidor que procura é o atual em que se encontra");
+                }
                 //pensar se é preciso algum else
             }
             else if (strcmp(comando, "exit\n") == 0)
