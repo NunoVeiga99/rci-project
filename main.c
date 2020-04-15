@@ -94,7 +94,7 @@ int create_TCP(char ip[128], char porto[128])
     n = getaddrinfo(ip, porto, &hints, &res);
     if (n != 0) /*error*/
     {
-        fprintf(stderr, "ERRO1: %d\n", gai_strerror(n));
+        fprintf(stderr, "ERRO1: %s\n", gai_strerror(n));
         exit(1);
     }
 
@@ -254,7 +254,7 @@ int main(int argc, char *argv[])
     //variáveis do entry
     char ipe_entry[128];
     char porto_entry[128];
-    int key_entry;
+    //int key_entry;
     int is_entry = 0;
     //struct sockaddr_in entry_addr;
     //socklen_t entry_addrlen;
@@ -408,7 +408,7 @@ int main(int argc, char *argv[])
                 printf("A chave escolhida é: %d\n", servidor->key);
 
                 token = strtok(NULL, s);
-                key_entry = atoi(token);
+                //key_entry = atoi(token);
                 
 
                 token = strtok(NULL, s);
@@ -418,7 +418,7 @@ int main(int argc, char *argv[])
                 token[strlen(token) - 1] = '\0';
                 strcpy(porto_entry, token);
                 
-                snprintf(mensagem, 512, "EFND %d\n", servidor->key);
+                snprintf(mensagem, 128, "EFND %d\n", servidor->key);
 
                 sendmessageUDP(udpfd, ipe_entry, porto_entry,mensagem);
                 
@@ -447,7 +447,7 @@ int main(int argc, char *argv[])
 
                 sfd = create_TCP(servidor->next->ipe, servidor->next->porto);
 
-                snprintf(mensagem, 512, "NEW %d %s %s", servidor->key, servidor->ipe, servidor->porto);
+                snprintf(mensagem, 128, "NEW %d %s %s", servidor->key, servidor->ipe, servidor->porto);
                 printf("A MSG É: %s\n", mensagem);
                 sendmessageTCP(sfd, mensagem);
                 fprintf(stderr, "I will be printed immediately\n");
@@ -560,7 +560,8 @@ int main(int argc, char *argv[])
             {
                 if (n == -1) //error
                     exit(1);
-                ptr = &buffer[0];
+               
+                //ptr = &buffer[0];
                 /*
                 while (n > 0)
                 { 
@@ -794,7 +795,7 @@ int main(int argc, char *argv[])
                     exit(1);
                 }
 
-                ptr = &buffer[0];
+                //ptr = &buffer[0];
                 /*
                 while (n > 0)
                 {
