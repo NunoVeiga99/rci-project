@@ -363,7 +363,9 @@ int main(int argc, char *argv[])
             //printf("Insira um comando:\n");
             //fflush(stdout);
             //scanf("%s", comando);
-            fgets(comando, 128, stdin); //receber input do teclado
+            if (fgets(comando, 128, stdin) == NULL){
+                //do something       
+            } //receber input do teclado
 
             //strcpy(comandofull, comando);
 
@@ -566,8 +568,8 @@ int main(int argc, char *argv[])
                     ptr += nw;
                 }
                 */
-                write(1, "Mensagem tcp recebida: ", 24);
-                write(1, buffer, strlen(buffer));
+                if(write(1, "Mensagem tcp recebida: ", 24) == -1);
+                if(write(1, buffer, strlen(buffer)) == -1);
 
                 strcpy(buffer_full, buffer);
                 token = strtok(buffer, s); //procurar no input onde está o espaço
@@ -646,8 +648,8 @@ int main(int argc, char *argv[])
         {
             if ((n = read(pre_fd, buffer, 128)) != 0)
             {
-                write(1, "Mensagem tcp recebida: ", 24);
-                write(1, buffer, strlen(buffer));
+                if(write(1, "Mensagem tcp recebida: ", 24)==-1);
+                if (write(1, buffer, strlen(buffer))==-1);
 
                 strcpy(buffer_full, buffer);
                 token = strtok(buffer, s); //procurar no input onde está o espaço
@@ -698,8 +700,8 @@ int main(int argc, char *argv[])
             //if (n == -1) /*error*/
             //   exit(1);
 
-            write(1, "Mensagem udp recebida: ", 24);
-            write(1, buffer, strlen(buffer));
+            if(write(1, "Mensagem udp recebida: ", 24) == -1);
+            if(write(1, buffer, strlen(buffer)) == -1);
 
             if((errcode=getnameinfo((struct sockaddr *)&addr,addrlen,host,sizeof host,service,sizeof service,0))!=0)
             fprintf(stderr,"error: getnameinfo: %s\n",gai_strerror(errcode));
@@ -801,8 +803,8 @@ int main(int argc, char *argv[])
                 }
                 */
 
-                write(1, "Mensagem tcp recebida: ", 24);
-                write(1, buffer, strlen(buffer));
+                if(write(1, "Mensagem tcp recebida: ", 24) == -1);
+                if(write(1, buffer, strlen(buffer))==-1);
 
                 //é a partir daqui que se INTERPRETA a mensagem
 
