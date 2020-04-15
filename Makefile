@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-Wall -std=c99 -O3
+CFLAGS= -Wall -O3
 
 SOURCES= main.c
 
