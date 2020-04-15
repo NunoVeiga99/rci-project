@@ -122,6 +122,7 @@ void sendmessageTCP(int fd, char message[128])
 {
 
     ssize_t nbytes, nleft, nwritten, nread;
+    //ssize_t nread;
     char *ptr, buffer[128];
 
     ptr = strcpy(buffer, message);
@@ -229,8 +230,8 @@ int main(int argc, char *argv[])
     char comando[128];     //guarda o comando inserido pelo utilizador
     char comandofull[128]; //guarda o comando inserido pelo utilizador e NÃO O ALTERA
     int i = 0;
-    int key = 0;
-    int count = 0; //conta o num. de espaços no menu (entry e sentry)
+    //int key = 0;
+    //int count = 0; //conta o num. de espaços no menu (entry e sentry)
 
     char mensagem[128];
 
@@ -242,16 +243,16 @@ int main(int argc, char *argv[])
     int key_found = -1;    // chave do servidor que tem a chave
     int find_fd = -2;      //ligacao
     int key_k = -1;        //key para procurar no find
-    int key_original;      //key para o server que mandou o pedido de find
+    //int key_original;      //key para o server que mandou o pedido de find
 
 
     //variáveis do entry
     char ipe_entry[128];
     char porto_entry[128];
-    int key_entry;
+    //int key_entry;
     int is_entry = 0;
-    struct sockaddr_in entry_addr;
-    socklen_t entry_addrlen;
+    //struct sockaddr_in entry_addr;
+    //socklen_t entry_addrlen;
 
 
 
@@ -262,7 +263,7 @@ int main(int argc, char *argv[])
     char host[NI_MAXHOST],service[NI_MAXSERV];
 
     //VARIÁVEIS de cliente TCP
-    ssize_t nbytes, nleft, nwritten;
+    //ssize_t nbytes, nleft, nwritten;
 
     //Se na chamada do programa o numero de argumentos não fôr 3
     if (argc != 3)
