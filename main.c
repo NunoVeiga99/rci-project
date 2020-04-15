@@ -44,24 +44,24 @@ struct connection
 Função create_UDP
 Cria um socket UDP, ao qual atribui um descritor
 -----------------------------------------*/
-int sendmessageUDP(char ip[128], char porto[128], char message[128])
+void sendmessageUDP(int fd, char ip[128], char porto[128], char message[128])
 {
 
     struct addrinfo hints, *res;
-    int fd, errcode;
+    int errcode;
     ssize_t n;
     struct sockaddr_in addr;
     socklen_t addrlen;
     char buffer[128];
     char host[NI_MAXHOST], service[NI_MAXSERV]; //consts in <netdb.h>
 
-    fd = socket(AF_INET, SOCK_DGRAM, 0); //UDP socket
     if (fd == -1)                        /*error*/
         exit(1);
 
-    memset(&hints, 0, sizeof hints);
-    hints.ai_family = AF_INET;      //IPv4
-    hints.ai_socktype = SOCK_DGRAM; //UDP socket
+    memset(&hints,0,sizeof hints);
+    hints.ai_family=AF_INET;//IPv4
+    hints.ai_socktype=SOCK_DGRAM;//UDP socket
+
 
     errcode = getaddrinfo(ip, porto, &hints, &res);
     if (errcode != 0) /*error*/
@@ -69,7 +69,7 @@ int sendmessageUDP(char ip[128], char porto[128], char message[128])
     n=sendto(fd,message,strlen(message),0,res->ai_addr,res->ai_addrlen);
     if(n==-1)/*error*/exit(1);
 
-    return fd;
+    
 }
 
 /*-----------------------------------------
@@ -249,6 +249,8 @@ int main(int argc, char *argv[])
     char porto_entry[128];
     int key_entry;
     int is_entry = 0;
+    struct sockaddr_in entry_addr;
+    socklen_t entry_addrlen;
 
 
 
@@ -407,9 +409,9 @@ int main(int argc, char *argv[])
                 token[strlen(token) - 1] = '\0';
                 strcpy(porto_entry, token);
                 
-                snprintf(mensagem, 512, "FND %d\n", servidor->key);
+                snprintf(mensagem, 512, "EFND %d\n", servidor->key);
 
-                sendmessageUDP(ipe_entry, porto_entry,mensagem);
+                sendmessageUDP(udpfd, ipe_entry, porto_entry,mensagem);
                 
 
             }
@@ -496,7 +498,7 @@ int main(int argc, char *argv[])
 
                 if (distance(key_k, servidor->next->key) > distance(key_k, servidor->key))
                 {
-                    snprintf(mensagem, 512, "FND %d %d %s %s", key_k, servidor->key, servidor->ipe, servidor->porto);
+                    snprintf(mensagem, 512, "EFND %d %d %s %s", key_k, servidor->key, servidor->ipe, servidor->porto);
                     sendmessageTCP(suc_fd, mensagem);
                 }
                 else
@@ -632,6 +634,9 @@ int main(int argc, char *argv[])
             }
         }
 
+
+
+
         if (FD_ISSET(pre_fd, &rfds) && ligacao->predecessor == 1)
         {
             if ((n = read(pre_fd, buffer, 128)) != 0)
@@ -642,7 +647,7 @@ int main(int argc, char *argv[])
                 strcpy(buffer_full, buffer);
                 token = strtok(buffer, s); //procurar no input onde está o espaço
 
-                if (strcmp(buffer, "FND") == 0)
+                if (strcmp(buffer, "EFND") == 0)
                 {
                     token = strtok(NULL, s);
                     key_k = atoi(token);
@@ -706,7 +711,7 @@ int main(int argc, char *argv[])
             printf("token: %s\n", token);
             
 
-            if (strcmp(buffer,"FND") == 0){
+            if (strcmp(buffer,"EFND") == 0){
 
                 is_entry = 1;
 
@@ -715,11 +720,48 @@ int main(int argc, char *argv[])
 
                 if (distance(key_k, servidor->next->key) > distance(key_k, servidor->key))
                 {
-                    snprintf(mensagem, 512, "FND %d %d %s %s", key_k, servidor->key, servidor->ipe, servidor->porto);
+                    snprintf(mensagem, 512, "EFND %d %d %s %s", key_k, servidor->key, servidor->ipe, servidor->porto);
                     sendmessageTCP(suc_fd, mensagem);
+                }else{
+
+                    printf("O servidor que procura é o atual em que se encontra");
+                    is_entry = 0;
+                    snprintf(mensagem, 512, "EKEY %d %d %s %s\n", key_k, key_found,ipe_found,porto_found);
+                    sendmessageUDP(udpfd,ipe_entry, porto_entry,mensagem);
+
                 }
 
+            }else if(strcmp(buffer,"EKEY") == 0){
+
+                token = strtok(NULL, s); //não é preciso guardar, só é preciso passar à frente
+                servidor->key = atoi(token);
+                printf("A chave escolhida é: %d\n", servidor->key);
+
+                token = strtok(NULL, s);
+                servidor->next->key = atoi(token);
+                printf("A chave do sucessor é: %d\n", servidor->next->key);
+
+                token = strtok(NULL, s);
+                strcpy(servidor->next->ipe, token);
+                printf("Sucessor ip: %s\n", servidor->next->ipe);
+
+                token = strtok(NULL, s);
+                token[strlen(token) - 1] = '\0';
+                strcpy(servidor->next->porto, token);
+                printf("Sucessor porto: %s\n", servidor->next->porto);
+
+                sfd = create_TCP(servidor->next->ipe, servidor->next->porto);
+
+                snprintf(mensagem, 512, "NEW %d %s %s", servidor->key, servidor->ipe, servidor->porto);
+                printf("A MSG É: %s\n", mensagem);
+                sendmessageTCP(sfd, mensagem);
+
+                //Guarda informação de ligação com o sucessor
+                suc_fd = sfd;
+                ligacao->sucessor = 1;
+
             }
+
 
 
 
@@ -846,10 +888,10 @@ int main(int argc, char *argv[])
                     if(is_entry == 1){
                             is_entry = 0;
                             snprintf(mensagem, 512, "EKEY %d %d %s %s\n", key_k, key_found,ipe_found,porto_found);
-                            sendmessageUDP(ipe_entry, porto_entry,mensagem);
+
+                            sendmessageUDP(udpfd,ipe_entry, porto_entry,mensagem);
 
                     }
-
 
                 }
             }
