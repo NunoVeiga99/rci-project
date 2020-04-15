@@ -232,7 +232,7 @@ int main(int argc, char *argv[])
     //char message[1024];
 
     //VARIÁVEIS do comandoos de utilização ou iterações
-    char comando[1024];     //guarda o comando inserido pelo utilizador
+    char comando[128];     //guarda o comando inserido pelo utilizador
     //char comandofull[1024]; //guarda o comando inserido pelo utilizador e NÃO O ALTERA
     //int i = 0;
     //int key = 0;
@@ -365,7 +365,7 @@ int main(int argc, char *argv[])
             //printf("Insira um comando:\n");
             //fflush(stdout);
             //scanf("%s", comando);
-            if (fgets(comando, 1024, stdin) == NULL){
+            if (fgets(comando, 128, stdin) == NULL){
                 //do something       
             } //receber input do teclado
 
@@ -608,7 +608,7 @@ int main(int argc, char *argv[])
 
                     sendmessageTCP(suc_fd, "SUCCCONF\n");
 
-                    snprintf(mensagem, 1024, "SUCC %d %s %s", servidor->next->key, servidor->next->ipe, servidor->next->porto);
+                    snprintf(mensagem, 1024, "SUCC %d %s %s\n", servidor->next->key, servidor->next->ipe, servidor->next->porto);
                     sendmessageTCP(pre_fd, mensagem);
                 }
             }
@@ -637,7 +637,7 @@ int main(int argc, char *argv[])
 
                     sendmessageTCP(suc_fd, "SUCCCONF\n");
 
-                    snprintf(mensagem, 1024, "SUCC %d %s %s", servidor->next->key, servidor->next->ipe, servidor->next->porto);
+                    snprintf(mensagem, 1024, "SUCC %d %s %s\n", servidor->next->key, servidor->next->ipe, servidor->next->porto);
                     sendmessageTCP(pre_fd, mensagem);
                 }
             }
@@ -842,7 +842,7 @@ int main(int argc, char *argv[])
 
                         //Diz a quem entrou quem é o seu duplo sucessor
                         //Que neste caso vai ser ele próprio (por isso tem o next)
-                        snprintf(mensagem, 1024, "SUCC %d %s %s", servidor->next->key, servidor->next->ipe, servidor->next->porto);
+                        snprintf(mensagem, 1024, "SUCC %d %s %s\n", servidor->next->key, servidor->next->ipe, servidor->next->porto);
                         printf("mensagemm enviada: %s", mensagem);
                         sendmessageTCP(pre_fd, mensagem);
 
@@ -860,7 +860,7 @@ int main(int argc, char *argv[])
                         afd = -2;
                         //Diz a quem entrou quem é o seu duplo sucessor
                         //Que neste caso vai ser ele próprio (por isso tem o next)
-                        snprintf(mensagem, 1024, "SUCC %d %s %s", servidor->next->key, servidor->next->ipe, servidor->next->porto);
+                        snprintf(mensagem, 1024, "SUCC %d %s %s\n", servidor->next->key, servidor->next->ipe, servidor->next->porto);
                         printf("mensagem enviada (NOVO ELSE): %s", mensagem);
                         sendmessageTCP(pre_fd, mensagem);
                     }
@@ -872,7 +872,7 @@ int main(int argc, char *argv[])
                     pre_fd = afd;
                     afd = -2;
 
-                    snprintf(mensagem, 1024, "SUCC %d %s %s", servidor->next->key, servidor->next->ipe, servidor->next->porto);
+                    snprintf(mensagem, 1024, "SUCC %d %s %s\n", servidor->next->key, servidor->next->ipe, servidor->next->porto);
                     sendmessageTCP(pre_fd, mensagem);
                 }
                 else if (strcmp(buffer, "KEY") == 0)
