@@ -53,7 +53,7 @@ void sendmessageUDP(int fd, char ip[128], char porto[128], char message[128])
     //struct sockaddr_in addr;
     //socklen_t addrlen;
     //char buffer[128];                 CONFIRMAR SE POSSO APAGAR
-    char host[NI_MAXHOST], service[NI_MAXSERV]; //consts in <netdb.h>
+    //char host[NI_MAXHOST], service[NI_MAXSERV]; //consts in <netdb.h>
 
     if (fd == -1)                        /*error*/
         exit(1);
