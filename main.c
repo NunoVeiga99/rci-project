@@ -53,7 +53,7 @@ void sendmessageUDP(int fd, char ip[128], char porto[128], char message[128])
     //struct sockaddr_in addr;
     //socklen_t addrlen;
     //char buffer[128];                 CONFIRMAR SE POSSO APAGAR
-    char host[NI_MAXHOST], service[NI_MAXSERV]; //consts in <netdb.h>
+    //char host[NI_MAXHOST], service[NI_MAXSERV]; //consts in <netdb.h>
 
     if (fd == -1)                        /*error*/
         exit(1);
@@ -121,7 +121,8 @@ Envia uma mensagem TCP
 void sendmessageTCP(int fd, char message[128])
 {
 
-    ssize_t nbytes, nleft, nwritten, nread;
+    ssize_t nbytes, nleft, nwritten;
+    //ssize_t nread;
     //ssize_t nread;
     char *ptr, buffer[128];
 
@@ -194,7 +195,8 @@ int distance(int k, int l)
 int main(int argc, char *argv[])
 {
 
-    int fd = -2, newfd = -2, sfd = -2, afd = -2, flags;
+    int fd = -2, newfd = -2, sfd = -2, afd = -2;
+    //int flags;
     int suc_fd = -2;
     int pre_fd = -2;
     fd_set rfds;
@@ -215,18 +217,18 @@ int main(int argc, char *argv[])
 
     const char s[2] = " "; //para procurar por espaços, usado no menu
     char *token;           //para guardar numa string o resto da string que se está a usar (menu)
-    char c = ' ';
+    //char c = ' ';
 
     //VARIÁVEIS do servidor TCP
     struct addrinfo hints, *res;
     int errcode;
-    ssize_t n, nw;
+    ssize_t n;
     //ssize_t nw;
     struct sockaddr_in addr;
     socklen_t addrlen;
-    char *ptr, buffer[128], buffer_full[128];
-    char *ptr;
-    char *send;
+    char buffer[128], buffer_full[128];
+    //char *ptr;
+    //char *send;
     //char message[128];
 
     //VARIÁVEIS do comandoos de utilização ou iterações
@@ -252,7 +254,7 @@ int main(int argc, char *argv[])
     //variáveis do entry
     char ipe_entry[128];
     char porto_entry[128];
-    //int key_entry;
+    int key_entry;
     int is_entry = 0;
     //struct sockaddr_in entry_addr;
     //socklen_t entry_addrlen;
