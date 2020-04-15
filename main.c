@@ -732,7 +732,14 @@ int main(int argc, char *argv[])
                 token = strtok(NULL, s); 
                 key_k = atoi(token);
 
-                if (distance(key_k, servidor->next->key) > distance(key_k, servidor->key))
+                if(servidor->key == servidor->next->key){
+                    
+                    if(write(1, "A chave que procura está no servidor em que se encontra\n", 58)==-1);
+                    is_entry = 0;
+                    snprintf(mensagem, 130, "EKEY %d %d %s %s", key_k, key_found,ipe_found,porto_found);
+                    sendmessageUDP(udpfd,ipe_entry, porto_entry,mensagem);
+                }
+                else if (distance(key_k, servidor->next->key) > distance(key_k, servidor->key))
                 {
                     if(snprintf(mensagem, 130, "FND %d %d %s %s", key_k, servidor->key, servidor->ipe, servidor->porto)==-1) exit(1);
                     sendmessageTCP(suc_fd, mensagem);
