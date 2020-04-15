@@ -221,15 +221,18 @@ int main(int argc, char *argv[])
     struct addrinfo hints, *res;
     int errcode;
     ssize_t n, nw;
+    //ssize_t nw;
     struct sockaddr_in addr;
     socklen_t addrlen;
     char *ptr, buffer[128], buffer_full[128];
-    char *send, message[128];
+    char *ptr;
+    char *send;
+    //char message[128];
 
     //VARIÁVEIS do comandoos de utilização ou iterações
     char comando[128];     //guarda o comando inserido pelo utilizador
-    char comandofull[128]; //guarda o comando inserido pelo utilizador e NÃO O ALTERA
-    int i = 0;
+    //char comandofull[128]; //guarda o comando inserido pelo utilizador e NÃO O ALTERA
+    //int i = 0;
     //int key = 0;
     //int count = 0; //conta o num. de espaços no menu (entry e sentry)
 
