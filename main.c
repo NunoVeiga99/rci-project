@@ -422,7 +422,7 @@ int main(int argc, char *argv[])
                 token[strlen(token) - 1] = '\0';
                 strcpy(porto_entry, token);
                 
-                snprintf(mensagem, 130, "EFND %d", servidor->key);
+                if(snprintf(mensagem, 130, "EFND %d", servidor->key)==-1) exit(1);
 
                 sendmessageUDP(udpfd, ipe_entry, porto_entry,mensagem);
                 
@@ -511,7 +511,7 @@ int main(int argc, char *argv[])
 
                 if (distance(key_k, servidor->next->key) > distance(key_k, servidor->key))
                 {
-                    snprintf(mensagem, 130, "FND %d %d %s %s", key_k, servidor->key, servidor->ipe, servidor->porto);
+                    if(snprintf(mensagem, 130, "FND %d %d %s %s", key_k, servidor->key, servidor->ipe, servidor->porto)==-1) exit(1);
                     sendmessageTCP(suc_fd, mensagem);
                 }
                 else
@@ -734,7 +734,7 @@ int main(int argc, char *argv[])
 
                 if (distance(key_k, servidor->next->key) > distance(key_k, servidor->key))
                 {
-                    snprintf(mensagem, 130, "FND %d %d %s %s", key_k, servidor->key, servidor->ipe, servidor->porto);
+                    if(snprintf(mensagem, 130, "FND %d %d %s %s", key_k, servidor->key, servidor->ipe, servidor->porto)==-1) exit(1);
                     sendmessageTCP(suc_fd, mensagem);
                 }else{
 
