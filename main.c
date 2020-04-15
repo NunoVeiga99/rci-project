@@ -47,12 +47,12 @@ Cria um socket UDP, ao qual atribui um descritor
 void sendmessageUDP(int fd, char ip[128], char porto[128], char message[128])
 {
 
-    struct addrinfo hints, *res;
+    //struct addrinfo hints, *res;
     int errcode;
     ssize_t n;
-    struct sockaddr_in addr;
-    socklen_t addrlen;
-    char buffer[128];
+    //struct sockaddr_in addr;
+    //socklen_t addrlen;
+    //char buffer[128];                 CONFIRMAR SE POSSO APAGAR
     char host[NI_MAXHOST], service[NI_MAXSERV]; //consts in <netdb.h>
 
     if (fd == -1)                        /*error*/
@@ -80,7 +80,8 @@ int create_TCP(char ip[128], char porto[128])
 {
 
     struct addrinfo hints, *res;
-    int n, fd, flags;
+    int n, fd;
+    //int flags;
 
     fd = socket(AF_INET, SOCK_STREAM, 0); //TCP socket
     if (fd == -1)
@@ -93,7 +94,7 @@ int create_TCP(char ip[128], char porto[128])
     n = getaddrinfo(ip, porto, &hints, &res);
     if (n != 0) /*error*/
     {
-        fprintf(stderr, "ERRO1: %s\n", gai_strerror(n));
+        fprintf(stderr, "ERRO1: %d\n", gai_strerror(n));
         exit(1);
     }
 
