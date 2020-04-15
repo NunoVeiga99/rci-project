@@ -52,7 +52,7 @@ void sendmessageUDP(int fd, char ip[128], char porto[128], char message[128])
     ssize_t n;
     //struct sockaddr_in addr;
     //socklen_t addrlen;
-    //char buffer[1024];                 CONFIRMAR SE POSSO APAGAR
+    //char buffer[130];                 CONFIRMAR SE POSSO APAGAR
     //char host[NI_MAXHOST], service[NI_MAXSERV]; //consts in <netdb.h>
 
     if (fd == -1)                        /*error*/
@@ -118,13 +118,13 @@ int create_TCP(char ip[128], char porto[128])
 Função sendmessageTCP
 Envia uma mensagem TCP
 -----------------------------------------*/
-void sendmessageTCP(int fd, char message[1024])
+void sendmessageTCP(int fd, char message[130])
 {
 
     ssize_t nbytes, nleft, nwritten;
     //ssize_t nread;
     //ssize_t nread;
-    char *ptr, buffer[1024];
+    char *ptr, buffer[130];
 
     ptr = strcpy(buffer, message);
     nbytes = strlen(buffer);
@@ -226,19 +226,19 @@ int main(int argc, char *argv[])
     //ssize_t nw;
     struct sockaddr_in addr;
     socklen_t addrlen;
-    char buffer[1024], buffer_full[1024];
+    char buffer[130], buffer_full[130];
     //char *ptr;
     //char *send;
-    //char message[1024];
+    //char message[130];
 
     //VARIÁVEIS do comandoos de utilização ou iterações
     char comando[128];     //guarda o comando inserido pelo utilizador
-    //char comandofull[1024]; //guarda o comando inserido pelo utilizador e NÃO O ALTERA
+    //char comandofull[130]; //guarda o comando inserido pelo utilizador e NÃO O ALTERA
     //int i = 0;
     //int key = 0;
     //int count = 0; //conta o num. de espaços no menu (entry e sentry)
 
-    char mensagem[1024];
+    char mensagem[130];
 
     //Variáveis do find
     char ipe_find[128];    //ip do servidor que pede o find
@@ -369,6 +369,7 @@ int main(int argc, char *argv[])
                 //do something       
             } //receber input do teclado
 
+
             //strcpy(comandofull, comando);
 
             //Dividir as mensagens
@@ -418,7 +419,7 @@ int main(int argc, char *argv[])
                 token[strlen(token) - 1] = '\0';
                 strcpy(porto_entry, token);
                 
-                snprintf(mensagem, 1024, "EFND %d\n", servidor->key);
+                snprintf(mensagem, 130, "EFND %d", servidor->key);
 
                 sendmessageUDP(udpfd, ipe_entry, porto_entry,mensagem);
                 
@@ -447,7 +448,7 @@ int main(int argc, char *argv[])
 
                 sfd = create_TCP(servidor->next->ipe, servidor->next->porto);
 
-                snprintf(mensagem, 1024, "NEW %d %s %s", servidor->key, servidor->ipe, servidor->porto);
+                snprintf(mensagem, 130, "NEW %d %s %s\n", servidor->key, servidor->ipe, servidor->porto);
                 printf("A MSG É: %s\n", mensagem);
                 sendmessageTCP(sfd, mensagem);
                 fprintf(stderr, "I will be printed immediately\n");
@@ -507,7 +508,7 @@ int main(int argc, char *argv[])
 
                 if (distance(key_k, servidor->next->key) > distance(key_k, servidor->key))
                 {
-                    snprintf(mensagem, 1024, "EFND %d %d %s %s", key_k, servidor->key, servidor->ipe, servidor->porto);
+                    snprintf(mensagem, 130, "FND %d %d %s %s\n", key_k, servidor->key, servidor->ipe, servidor->porto);
                     sendmessageTCP(suc_fd, mensagem);
                 }
                 else
@@ -556,7 +557,7 @@ int main(int argc, char *argv[])
         //Canal com sucessor
         if (FD_ISSET(suc_fd, &rfds) && ligacao->sucessor == 1) //MENSAGEM DO SUCESSOR
         {
-            if ((n = read(suc_fd, buffer, 1024)) != 0)
+            if ((n = read(suc_fd, buffer, 130)) != 0)
             {
                 if (n == -1) //error
                     exit(1);
@@ -608,7 +609,7 @@ int main(int argc, char *argv[])
 
                     sendmessageTCP(suc_fd, "SUCCCONF\n");
 
-                    snprintf(mensagem, 1024, "SUCC %d %s %s\n", servidor->next->key, servidor->next->ipe, servidor->next->porto);
+                    snprintf(mensagem, 130, "SUCC %d %s %s\n", servidor->next->key, servidor->next->ipe, servidor->next->porto);
                     sendmessageTCP(pre_fd, mensagem);
                 }
             }
@@ -637,7 +638,7 @@ int main(int argc, char *argv[])
 
                     sendmessageTCP(suc_fd, "SUCCCONF\n");
 
-                    snprintf(mensagem, 1024, "SUCC %d %s %s\n", servidor->next->key, servidor->next->ipe, servidor->next->porto);
+                    snprintf(mensagem, 130, "SUCC %d %s %s\n", servidor->next->key, servidor->next->ipe, servidor->next->porto);
                     sendmessageTCP(pre_fd, mensagem);
                 }
             }
@@ -648,7 +649,7 @@ int main(int argc, char *argv[])
 
         if (FD_ISSET(pre_fd, &rfds) && ligacao->predecessor == 1)
         {
-            if ((n = read(pre_fd, buffer, 1024)) != 0)
+            if ((n = read(pre_fd, buffer, 130)) != 0)
             {
                 if(write(1, "Mensagem tcp recebida: ", 24)==-1);
                 if (write(1, buffer, strlen(buffer))==-1);
@@ -656,7 +657,7 @@ int main(int argc, char *argv[])
                 strcpy(buffer_full, buffer);
                 token = strtok(buffer, s); //procurar no input onde está o espaço
 
-                if (strcmp(buffer, "EFND") == 0)
+                if (strcmp(buffer, "FND") == 0)
                 {
                     token = strtok(NULL, s);
                     key_k = atoi(token);
@@ -677,7 +678,7 @@ int main(int argc, char *argv[])
                         strcpy(porto_find, token);
 
                         find_fd = create_TCP(ipe_find, porto_find);
-                        snprintf(mensagem, 1024, "KEY %d %d %s %s", key_k, servidor->next->key, servidor->next->ipe, servidor->next->porto);
+                        snprintf(mensagem, 130, "KEY %d %d %s %s\n", key_k, servidor->next->key, servidor->next->ipe, servidor->next->porto);
                         sendmessageTCP(find_fd, mensagem);
                     }
                 }
@@ -694,7 +695,7 @@ int main(int argc, char *argv[])
         if (FD_ISSET(udpfd, &rfds)) //receber UDP de alguem desconhecido
         {
             addrlen = sizeof(addr);
-            nread = recvfrom(udpfd, buffer, 1024, 0, (struct sockaddr *)&addr, &addrlen);
+            nread = recvfrom(udpfd, buffer, 130, 0, (struct sockaddr *)&addr, &addrlen);
             if (nread == -1) /*error*/
                
                 exit(1);
@@ -729,13 +730,13 @@ int main(int argc, char *argv[])
 
                 if (distance(key_k, servidor->next->key) > distance(key_k, servidor->key))
                 {
-                    snprintf(mensagem, 1024, "EFND %d %d %s %s", key_k, servidor->key, servidor->ipe, servidor->porto);
+                    snprintf(mensagem, 130, "FND %d %d %s %s\n", key_k, servidor->key, servidor->ipe, servidor->porto);
                     sendmessageTCP(suc_fd, mensagem);
                 }else{
 
                     printf("O servidor que procura é o atual em que se encontra");
                     is_entry = 0;
-                    snprintf(mensagem, 1024, "EKEY %d %d %s %s\n", key_k, key_found,ipe_found,porto_found);
+                    snprintf(mensagem, 130, "EKEY %d %d %s %s", key_k, key_found,ipe_found,porto_found);
                     sendmessageUDP(udpfd,ipe_entry, porto_entry,mensagem);
 
                 }
@@ -761,7 +762,7 @@ int main(int argc, char *argv[])
 
                 sfd = create_TCP(servidor->next->ipe, servidor->next->porto);
 
-                snprintf(mensagem, 1024, "NEW %d %s %s", servidor->key, servidor->ipe, servidor->porto);
+                snprintf(mensagem, 130, "NEW %d %s %s\n", servidor->key, servidor->ipe, servidor->porto);
                 printf("A MSG É: %s\n", mensagem);
                 sendmessageTCP(sfd, mensagem);
 
@@ -786,7 +787,7 @@ int main(int argc, char *argv[])
 
             printf("afd: %d\n", afd);
 
-            if ((n = read(afd, buffer, 1024)) != 0)
+            if ((n = read(afd, buffer, 130)) != 0)
             {
                 if (n == -1)
                 {
@@ -842,14 +843,14 @@ int main(int argc, char *argv[])
 
                         //Diz a quem entrou quem é o seu duplo sucessor
                         //Que neste caso vai ser ele próprio (por isso tem o next)
-                        snprintf(mensagem, 1024, "SUCC %d %s %s\n", servidor->next->key, servidor->next->ipe, servidor->next->porto);
+                        snprintf(mensagem, 130, "SUCC %d %s %s\n", servidor->next->key, servidor->next->ipe, servidor->next->porto);
                         printf("mensagemm enviada: %s", mensagem);
                         sendmessageTCP(pre_fd, mensagem);
 
                         ligacao->sucessor = 1;
                         suc_fd = create_TCP(servidor->next->ipe, servidor->next->porto);
 
-                        //snprintf(mensagem, 1024, "SUCCCONF\n");
+                        //snprintf(mensagem, 130, "SUCCCONF\n");
                         sendmessageTCP(suc_fd, "SUCCCONF\n");
                     }
                     else
@@ -860,7 +861,7 @@ int main(int argc, char *argv[])
                         afd = -2;
                         //Diz a quem entrou quem é o seu duplo sucessor
                         //Que neste caso vai ser ele próprio (por isso tem o next)
-                        snprintf(mensagem, 1024, "SUCC %d %s %s\n", servidor->next->key, servidor->next->ipe, servidor->next->porto);
+                        snprintf(mensagem, 130, "SUCC %d %s %s\n", servidor->next->key, servidor->next->ipe, servidor->next->porto);
                         printf("mensagem enviada (NOVO ELSE): %s", mensagem);
                         sendmessageTCP(pre_fd, mensagem);
                     }
@@ -872,7 +873,7 @@ int main(int argc, char *argv[])
                     pre_fd = afd;
                     afd = -2;
 
-                    snprintf(mensagem, 1024, "SUCC %d %s %s\n", servidor->next->key, servidor->next->ipe, servidor->next->porto);
+                    snprintf(mensagem, 130, "SUCC %d %s %s\n", servidor->next->key, servidor->next->ipe, servidor->next->porto);
                     sendmessageTCP(pre_fd, mensagem);
                 }
                 else if (strcmp(buffer, "KEY") == 0)
@@ -896,7 +897,7 @@ int main(int argc, char *argv[])
 
                     if(is_entry == 1){
                             is_entry = 0;
-                            snprintf(mensagem, 1024, "EKEY %d %d %s %s\n", key_k, key_found,ipe_found,porto_found);
+                            snprintf(mensagem, 130, "EKEY %d %d %s %s", key_k, key_found,ipe_found,porto_found);
 
                             sendmessageUDP(udpfd,ipe_entry, porto_entry,mensagem);
 
