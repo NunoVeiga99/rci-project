@@ -556,6 +556,7 @@ int main(int argc, char *argv[])
         //Canal com sucessor
         if (FD_ISSET(suc_fd, &rfds) && ligacao->sucessor == 1) //MENSAGEM DO SUCESSOR
         {
+            
             if ((n = read(suc_fd, buffer, 128)) != 0)
             {
                 if (n == -1) //error
