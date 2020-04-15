@@ -47,7 +47,7 @@ Cria um socket UDP, ao qual atribui um descritor
 void sendmessageUDP(int fd, char ip[128], char porto[128], char message[128])
 {
 
-    //struct addrinfo hints, *res;
+    struct addrinfo hints, *res;
     int errcode;
     ssize_t n;
     //struct sockaddr_in addr;
