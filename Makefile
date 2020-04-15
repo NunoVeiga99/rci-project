@@ -1,12 +1,12 @@
 CC=gcc
-CFLAGS=-Wall -O3
+CFLAGS=-Wall -g
 
 SOURCES= main.c
 
 OBJECTS= main.o
 
 dkt: main.o
-	    $(CC) -O3 -o $@ $(OBJECTS)
+	    $(CC) -g -o $@ $(OBJECTS)
 
 main.o: main.c
 		$(CC) -c $(CFLAGS) main.c
