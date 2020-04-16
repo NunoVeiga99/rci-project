@@ -1,4 +1,3 @@
-
 #include <sys/time.h>
 #include <unistd.h>
 #include <stdio.h>
@@ -11,6 +10,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <sys/select.h>
+#include <time.h>
 
 /* ... */
 #define max(A, B) ((A) >= (B) ? (A) : (B))
@@ -18,6 +18,8 @@
 #define smallchar 5
 #define bigchar 100
 #define N 16 //número máximo de servidores num anel
+#define udp_limite 3        //3 segundos de limite para o tempo udp
+#define udp_maxtentativas 3     //3 tentativas máximas para repetir enviar a mensagem tcp
 
 //Struct para guardar informações do servidor
 struct server
@@ -70,9 +72,7 @@ void sendmessageUDP(int fd, char ip[128], char porto[128], char message[128])
 
     //Envia mensagem    
     n= sendto(fd,message,strlen(message),0,res->ai_addr,res->ai_addrlen);
-    if(n==-1)/*error*/exit(1);
-
-    
+    if(n==-1)/*error*/exit(1);   
 }
 
 /*-----------------------------------------
@@ -254,7 +254,6 @@ int main(int argc, char *argv[])
     int key_k = -1;        //key para procurar no find
     //int key_original;      //key para o server que mandou o pedido de find
 
-
     //variáveis do entry
     char ipe_entry[128];
     char porto_entry[128];
@@ -270,6 +269,15 @@ int main(int argc, char *argv[])
     int udpfd;
     ssize_t nread;
     char host[NI_MAXHOST],service[NI_MAXSERV];
+    
+    struct timeval tempo_lim;
+    tempo_lim.tv_sec = udp_limite;        //segundos
+    tempo_lim.tv_usec = 0;                //milisegundos
+
+    int udp_tentativas = 0;
+
+    time_t udp_ultima_tentativa = time(NULL);
+
 
     //VARIÁVEIS de cliente TCP
     //ssize_t nbytes, nleft, nwritten;
@@ -352,7 +360,16 @@ int main(int argc, char *argv[])
         }
 
         // SELECT
-        counter = select(maxfd + 1, &rfds, (fd_set *)NULL, (fd_set *)NULL, (struct timeval *)NULL);
+        if(udp_tentativas > 0)
+        {
+            counter = select(maxfd + 1, &rfds, (fd_set *)NULL, (fd_set *)NULL, &tempo_lim);
+        }
+        else
+        {
+            counter = select(maxfd + 1, &rfds, (fd_set *)NULL, (fd_set *)NULL, (struct timeval *)NULL);
+        }
+                
+        //counter = select(maxfd + 1, &rfds, (fd_set *)NULL, (fd_set *)NULL, (struct timeval *)NULL);
 
         printf("counter: %d\n", counter);
 
@@ -361,6 +378,28 @@ int main(int argc, char *argv[])
             printf("Erro no select");
             exit(1);
         } /*error*/
+
+        //Verificar se há timeout de udp
+        if(udp_tentativas > 0 && (time(NULL) - udp_ultima_tentativa) > udp_limite)
+        {
+            printf("À espera da resposta EFND");
+            if(udp_tentativas < udp_maxtentativas)
+            {
+                printf("A reenviar mensagem udp");
+                if(snprintf(mensagem, 130, "EFND %d\n", servidor->key)==-1) exit(1);
+                sendmessageUDP(udpfd, ipe_entry, porto_entry,mensagem);
+
+                udp_ultima_tentativa = time(NULL);
+                udp_tentativas = udp_tentativas + 1;
+            }
+            else
+            {
+                printf("Ocorreu erro, foram realizadas demasiadas tentativas de envio de mensagem sem sucesso");
+                udp_tentativas = 0;
+            }
+            
+
+        }
 
         // Se há input para ler
         //É dentro deste if que se lê o input do utilizador
@@ -423,7 +462,8 @@ int main(int argc, char *argv[])
                 strcpy(porto_entry, token);
                 
                 if(snprintf(mensagem, 130, "EFND %d\n", servidor->key)==-1) exit(1);
-
+                udp_tentativas = 1;
+                udp_ultima_tentativa = time(NULL);
                 sendmessageUDP(udpfd, ipe_entry, porto_entry,mensagem);
                 
 
@@ -761,6 +801,7 @@ int main(int argc, char *argv[])
                 }
 
             }else if(strcmp(buffer,"EKEY") == 0){
+                udp_tentativas = 0; //significa que a mensagem foi recebida
 
                 token = strtok(NULL, s); //não é preciso guardar, só é preciso passar à frente
                 servidor->key = atoi(token);
