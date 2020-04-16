@@ -1,15 +1,15 @@
 CC=gcc
 CFLAGS=-Wall -g
 
-SOURCES= main.c
+SOURCES= dkt.c
 
-OBJECTS= main.o
+OBJECTS= dkt.o
 
-dkt: main.o
+dkt: dkt.o
 	    $(CC) -g -o $@ $(OBJECTS)
 
 main.o: main.c
-		$(CC) -c $(CFLAGS) main.c
+		$(CC) -c $(CFLAGS) dkt.c
 
 clean::
 	rm -f *.o core a.out dkt *~
