@@ -241,6 +241,7 @@ int main(int argc, char *argv[])
     //int count = 0; //conta o num. de espaços no menu (entry e sentry)
 
     char mensagem[130];
+    char mensagem1[65],mensagem2[65];
     int ler_nova = 0;
     int ler_suc = 0;
     int ler_pre = 0;
@@ -453,12 +454,14 @@ int main(int argc, char *argv[])
 
                 sfd = create_TCP(servidor->next->ipe, servidor->next->porto);
 
-                if (snprintf(mensagem, 130, "NEW %d %s %s\n", servidor->key, servidor->ipe, servidor->porto) == -1)
+                if (snprintf(mensagem1, 130, "NEW %d ", servidor->key) == -1)
                     exit(1);
-                printf("A MSG É: %s\n", mensagem);
-                sendmessageTCP(sfd, mensagem);
+                printf("A MSG1 É: %s\n", mensagem1);
+                 if (snprintf(mensagem2, 130, "%s %s\n", servidor->ipe, servidor->porto) == -1);
+                 printf("A MSG2 É: %s\n", mensagem2);
+                sendmessageTCP(sfd, mensagem1);
+                sendmessageTCP(sfd, mensagem2);
                 fprintf(stderr, "I will be printed immediately\n");
-
                 //Guarda informação de ligação com o sucessor
                 suc_fd = sfd;
                 ligacao->sucessor = 1;
@@ -544,7 +547,7 @@ int main(int argc, char *argv[])
                 printf("Erro, insira um comando válido\n");
             }
         }
-
+        
         //Conexão TCP
         if (FD_ISSET(fd, &rfds)) //receber TCP de alguem desconhecido
         {
