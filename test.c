@@ -1,4 +1,3 @@
-
 #include <sys/time.h>
 #include <unistd.h>
 #include <stdio.h>
@@ -373,7 +372,6 @@ int main(int argc, char *argv[])
                 //do something       
             } //receber input do teclado
 
-
             //strcpy(comandofull, comando);
 
             //Dividir as mensagens
@@ -422,9 +420,8 @@ int main(int argc, char *argv[])
                 token[strlen(token) - 1] = '\0';
                 strcpy(porto_entry, token);
                 
-                if(snprintf(mensagem, 130, "EFND %d\n", servidor->key)==-1) exit(1);
-
-                sendmessageUDP(udpfd, ipe_entry, porto_entry,mensagem);
+                if(snprintf(mensagem, 130, "EFND %d\n", servidor->key)==-1)exit(1);
+                sendmessageUDP(udpfd, ipe_entry, porto_entry, mensagem );
                 
 
             }
@@ -509,20 +506,14 @@ int main(int argc, char *argv[])
                 token = strtok(NULL, s); 
                 key_k = atoi(token);
 
-
-                if(servidor->key == servidor->next->key){
-                    if(write(1, "A chave que procura está no servidor em que se encontra\n", 58)==-1);
-                }
-                else if (distance(key_k, servidor->next->key) > distance(key_k, servidor->key))
+                if (distance(key_k, servidor->next->key) > distance(key_k, servidor->key))
                 {
-                    if(snprintf(mensagem, 130, "FND %d %d %s %s", key_k, servidor->key, servidor->ipe, servidor->porto)==-1) exit(1);
+                    if(snprintf(mensagem, 130, "EFND %d %d %s %s", key_k, servidor->key, servidor->ipe, servidor->porto) == -1)exit(1);
                     sendmessageTCP(suc_fd, mensagem);
                 }
                 else
                 {
-                    printf("A chave %d foi encontrada\n", key_k);
-                    printf("Encontra-se no servidor %d\nIP: %s\nPorto: %s", servidor->next->key, servidor->next->ipe, servidor->next->porto);
-                    printf("\n");
+                    if(write(1, "A chave que procura está no servidor em que se encontra\n", 58)==-1);
                 }
                 //pensar se é preciso algum else
             }
@@ -667,7 +658,7 @@ int main(int argc, char *argv[])
                 strcpy(buffer_full, buffer);
                 token = strtok(buffer, s); //procurar no input onde está o espaço
 
-                if (strcmp(buffer, "FND") == 0)
+                if (strcmp(buffer, "EFND") == 0)
                 {
                     token = strtok(NULL, s);
                     key_k = atoi(token);
@@ -738,24 +729,15 @@ int main(int argc, char *argv[])
                 token = strtok(NULL, s); 
                 key_k = atoi(token);
 
-                if(servidor->key == servidor->next->key){
-
-                    if(write(1, "A chave que procura está no servidor em que se encontra\n", 58)==-1);
-                    is_entry = 0;
-                    if(snprintf(mensagem, 130, "EKEY %d %d %s %s\n", key_k, servidor->key,servidor->ipe,servidor->porto) == -1)exit(1);
-                    sendmessageUDP(udpfd,ipe_entry, porto_entry,mensagem);
-                }
-                else if (distance(key_k, servidor->next->key) > distance(key_k, servidor->key))
+                if (distance(key_k, servidor->next->key) > distance(key_k, servidor->key))
                 {
-                    if(snprintf(mensagem, 130, "FND %d %d %s %s", key_k, servidor->key, servidor->ipe, servidor->porto)==-1) exit(1);
+                    if(snprintf(mensagem, 130, "EFND %d %d %s %s", key_k, servidor->key, servidor->ipe, servidor->porto)==-1)exit(1);
                     sendmessageTCP(suc_fd, mensagem);
                 }else{
 
-                    printf("A chave %d foi encontrada\n", key_k);
-                    printf("Encontra-se no servidor %d\nIP: %s\nPorto: %s", servidor->next->key, servidor->next->ipe, servidor->next->porto);
-                    printf("\n");
+                    if(write(1, "A chave que procura está no servidor em que se encontra\n", 58)==-1);
                     is_entry = 0;
-                    if(snprintf(mensagem, 130, "EKEY %d %d %s %s\n", key_k, servidor->next->key,servidor->next->ipe,servidor->next->porto) == -1)exit(1);
+                    if(snprintf(mensagem, 130, "EKEY %d %d %s %s\n", key_k, key_found,ipe_found,porto_found)==-1)exit(1);
                     sendmessageUDP(udpfd,ipe_entry, porto_entry,mensagem);
 
                 }
@@ -775,7 +757,7 @@ int main(int argc, char *argv[])
                 printf("Sucessor ip: %s\n", servidor->next->ipe);
 
                 token = strtok(NULL, s);
-                token[strlen(token)-1] = '\0'; // REMOVE O \n DO FIM
+                token[strlen(token) - 1] = '\0';
                 strcpy(servidor->next->porto, token);
                 printf("Sucessor porto: %s\n", servidor->next->porto);
 
@@ -941,5 +923,3 @@ int main(int argc, char *argv[])
     close(fd);
     exit(0);
 }
-
-

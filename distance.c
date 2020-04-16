@@ -17,8 +17,8 @@ int distance(int k, int l)
 
 int main(){
 
-    int k = 5;
-    int l = 9;
+    int k = 10;
+    int l = 8;
     int result = distance(k,l);
     printf("distancia de %d a %d = %d\n" ,k,l,result);
 
