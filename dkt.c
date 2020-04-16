@@ -127,7 +127,6 @@ void sendmessageTCP(int fd, char message[130])
         if (nwritten <= 0)
         {
             fprintf(stderr, "ERRO WRITE:\n");
-            //printf("ERRO NO WRITE");
             exit(1);
         } /*error*/
         nleft -= nwritten;
@@ -241,9 +240,7 @@ int main(int argc, char *argv[])
 
     //Guarda o ip e o porto na estrutura
     strcpy(servidor->ipe, argv[1]);
-    printf("IP: %s\n", servidor->ipe);
     strcpy(servidor->porto, argv[2]);
-    printf("Porto: %s\n", servidor->porto);
 
     // Cria socket TCP
     if ((fd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
@@ -319,8 +316,6 @@ int main(int argc, char *argv[])
             counter = select(maxfd + 1, &rfds, (fd_set *)NULL, (fd_set *)NULL, (struct timeval *)NULL);
         }
 
-        printf("counter: %d\n", counter);
-
         if (counter <= 0)
         {
             printf("Erro no select");
@@ -379,7 +374,6 @@ int main(int argc, char *argv[])
 
                 token = strtok(NULL, s); //não é preciso guardar, só é preciso passar à frente
                 servidor->key = atoi(token);
-                printf("A chave escolhida é: %d\n", servidor->key);
 
                 token = strtok(NULL, s);
 
@@ -402,28 +396,22 @@ int main(int argc, char *argv[])
 
                 token = strtok(NULL, s); //não é preciso guardar, só é preciso passar à frente
                 servidor->key = atoi(token);
-                printf("A chave escolhida é: %d\n", servidor->key);
 
                 token = strtok(NULL, s);
                 servidor->next->key = atoi(token);
-                printf("A chave do sucessor é: %d\n", servidor->next->key);
 
                 token = strtok(NULL, s);
                 strcpy(servidor->next->ipe, token);
-                printf("Sucessor ip: %s\n", servidor->next->ipe);
 
                 token = strtok(NULL, s);
                 token[strlen(token) - 1] = '\0';
                 strcpy(servidor->next->porto, token);
-                printf("Sucessor porto: %s\n", servidor->next->porto);
 
                 sfd = create_TCP(servidor->next->ipe, servidor->next->porto);
 
                 if (snprintf(mensagem, 130, "NEW %d %s %s", servidor->key, servidor->ipe, servidor->porto) == -1)
                     exit(1);
-                printf("A MSG É: %s\n", mensagem);
                 sendmessageTCP(sfd, mensagem);
-                fprintf(stderr, "I will be printed immediately\n");
 
                 //Guarda informação de ligação com o sucessor
                 suc_fd = sfd;
@@ -542,8 +530,6 @@ int main(int argc, char *argv[])
 
                 strcpy(buffer_full, buffer);
                 token = strtok(buffer, s); //procurar no input onde está o espaço
-                printf("buffer: %s\n", buffer);
-                printf("token: %s\n", token);
 
                 if (strcmp(buffer, "SUCC") == 0)
                 {
@@ -682,8 +668,6 @@ int main(int argc, char *argv[])
 
             strcpy(buffer_full, buffer); //salvar a mensagem original
             token = strtok(buffer, s);   //procurar no input onde está o espaço
-            printf("buffer: %s\n", buffer);
-            printf("token: %s\n", token);
 
             if (strcmp(buffer, "EFND") == 0)
             {
@@ -725,26 +709,21 @@ int main(int argc, char *argv[])
 
                 token = strtok(NULL, s); //não é preciso guardar, só é preciso passar à frente
                 servidor->key = atoi(token);
-                printf("A chave escolhida é: %d\n", servidor->key);
 
                 token = strtok(NULL, s);
                 servidor->next->key = atoi(token);
-                printf("A chave do sucessor é: %d\n", servidor->next->key);
 
                 token = strtok(NULL, s);
                 strcpy(servidor->next->ipe, token);
-                printf("Sucessor ip: %s\n", servidor->next->ipe);
 
                 token = strtok(NULL, s);
                 token[strlen(token) - 1] = '\0'; // REMOVE O \n DO FIM
                 strcpy(servidor->next->porto, token);
-                printf("Sucessor porto: %s\n", servidor->next->porto);
 
                 sfd = create_TCP(servidor->next->ipe, servidor->next->porto);
 
                 if (snprintf(mensagem, 130, "NEW %d %s %s", servidor->key, servidor->ipe, servidor->porto) == -1)
                     exit(1);
-                printf("A MSG É: %s\n", mensagem);
                 sendmessageTCP(sfd, mensagem);
 
                 //Guarda informação de ligação com o sucessor
@@ -756,8 +735,6 @@ int main(int argc, char *argv[])
         //Receber mensagens de um servidor novo
         if (FD_ISSET(afd, &rfds)) //MENSAGENS DE FORA
         {
-            printf("afd: %d\n", afd);
-
             if ((n = read(afd, buffer, 130)) != 0)
             {
                 if (n == -1)
@@ -775,14 +752,11 @@ int main(int argc, char *argv[])
 
                 strcpy(buffer_full, buffer); //salvar a mensagem original
                 token = strtok(buffer, s);   //procurar no input onde está o espaço
-                printf("buffer: %s\n", buffer);
-                printf("token: %s\n", token);
 
                 ligacao->nova = 0; // se já lemos tudo da ligacao nova, fechamos o descritor
 
                 if (strcmp(buffer, "NEW") == 0)
                 {
-
                     if (servidor->key == servidor->next->key) //Se houver só um servidor no anel
                     {
 
@@ -791,11 +765,9 @@ int main(int argc, char *argv[])
 
                         token = strtok(NULL, s);
                         strcpy(servidor->next->ipe, token);
-                        printf("Sucessor ip: %s\n", servidor->next->ipe);
 
                         token = strtok(NULL, s);
                         strcpy(servidor->next->porto, token);
-                        printf("Sucessor porto: %s\n", servidor->next->porto);
 
                         ligacao->predecessor = 1;
                         pre_fd = afd;
@@ -805,7 +777,7 @@ int main(int argc, char *argv[])
                         //Que neste caso vai ser ele próprio (por isso tem o next)
                         if (snprintf(mensagem, 130, "SUCC %d %s %s", servidor->next->key, servidor->next->ipe, servidor->next->porto) == -1)
                             exit(1);
-                        printf("mensagemm enviada: %s", mensagem);
+
                         sendmessageTCP(pre_fd, mensagem);
 
                         ligacao->sucessor = 1;
@@ -823,7 +795,6 @@ int main(int argc, char *argv[])
                         //Que neste caso vai ser ele próprio (por isso tem o next)
                         if (snprintf(mensagem, 130, "SUCC %d %s %s", servidor->next->key, servidor->next->ipe, servidor->next->porto) == -1)
                             exit(1);
-                        printf("mensagem enviada (NOVO ELSE): %s", mensagem);
                         sendmessageTCP(pre_fd, mensagem);
                     }
                 }
