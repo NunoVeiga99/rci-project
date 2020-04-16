@@ -11,6 +11,7 @@
 #include <fcntl.h>
 #include <sys/select.h>
 #include <time.h>
+#include<signal.h>
 
 #define max(A, B) ((A) >= (B) ? (A) : (B))
 
@@ -19,6 +20,7 @@
 #define N 16                //número máximo de servidores num anel
 #define udp_limite 2        //2 segundos de limite para o tempo udp
 #define udp_maxtentativas 5 //3 tentativas máximas para repetir enviar a mensagem tcp
+
 
 //Struct para guardar informações do servidor
 struct server
@@ -247,6 +249,15 @@ int main(int argc, char *argv[])
     strcpy(servidor->ipe, argv[1]);
     strcpy(servidor->porto, argv[2]);
 
+
+    //Lidar com o SIGIPE
+    struct sigaction act; // estrutura necessário para lidar com o sigpipe
+    memset(&act,0, sizeof(act));
+    act.sa_handler=SIG_IGN;
+    if (sigaction (SIGPIPE,&act, NULL)==-1) /*error*/ exit(1);
+
+
+
     // Cria socket TCP
     if ((fd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
         exit(1); //error
@@ -449,13 +460,13 @@ int main(int argc, char *argv[])
                 ligacao->sucessor = 0;
                 ligacao->predecessor = 0;
 
-                servidor->key = 0;
+                servidor->key = -1;
 
-                servidor->next->key = 0;
+                servidor->next->key = -1;
                 strcpy(servidor->next->ipe, " ");
                 strcpy(servidor->next->porto, " ");
 
-                servidor->next2->key = 0;
+                servidor->next2->key = -1;
                 strcpy(servidor->next2->ipe, " ");
                 strcpy(servidor->next2->porto, " ");
             }
