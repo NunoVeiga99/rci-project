@@ -18,8 +18,8 @@
 #define smallchar 5
 #define bigchar 100
 #define N 16 //número máximo de servidores num anel
-#define udp_limite 3        //3 segundos de limite para o tempo udp
-#define udp_maxtentativas 3     //3 tentativas máximas para repetir enviar a mensagem tcp
+#define udp_limite 2        //2 segundos de limite para o tempo udp
+#define udp_maxtentativas 5     //3 tentativas máximas para repetir enviar a mensagem tcp
 
 //Struct para guardar informações do servidor
 struct server
