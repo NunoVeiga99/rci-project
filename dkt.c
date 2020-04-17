@@ -381,7 +381,7 @@ int main(int argc, char *argv[])
 
             if (strcmp(comando, "new") == 0)
             {
-                printf("Escolheu: new\n");
+                printf("\nEscolheu: new\n");
                 token = strtok(NULL, s); //é o token que vai lendo as coisas SEGUINTES
                 servidor->key = atoi(token);
 
@@ -389,7 +389,7 @@ int main(int argc, char *argv[])
                 /* Verifica se o valor da chave inserida  é menor que o numero máximo N*/
                 while (servidor->key > N)
                 {
-                    printf("A chave que inseriu é inválida.\nInsira um número menor que %d\n", N);
+                    printf("\nA chave que inseriu é inválida.\nInsira um número menor que %d\n", N);
                     printf("Chave: ");
                     if (fgets(key_error, 10, stdin) == NULL);
                     servidor->key = atoi(key_error);
@@ -404,7 +404,7 @@ int main(int argc, char *argv[])
             }
             else if (strcmp(comando, "entry") == 0)
             {
-                printf("Escolheu: entry\n");
+                printf("\nEscolheu: entry\n");
 
                 token = strtok(NULL, s); //não é preciso guardar, só é preciso passar à frente
                 servidor->key = atoi(token);
@@ -412,7 +412,7 @@ int main(int argc, char *argv[])
                  /* Verifica se o valor da chave inserida  é menor que o numero máximo N*/
                 while (servidor->key > N)
                 {
-                    printf("A chave que inseriu é inválida.\nInsira um número menor que %d para a chave do seu servidor\n", N);
+                    printf("\nA chave que inseriu é inválida.\nInsira um número menor que %d para a chave do seu servidor\n", N);
                     printf("Chave: ");
                     if (fgets(key_error, 10, stdin) == NULL);
                     servidor->key = atoi(key_error);
@@ -435,7 +435,7 @@ int main(int argc, char *argv[])
             }
             else if (strcmp(comando, "sentry") == 0)
             {
-                printf("Escolheu: sentry\n");
+                printf("\nEscolheu: sentry\n");
 
                 token = strtok(NULL, s); //não é preciso guardar, só é preciso passar à frente
                 servidor->key = atoi(token);
@@ -443,7 +443,7 @@ int main(int argc, char *argv[])
                  /* Verifica se o valor da chave inserida  é menor que o numero máximo N*/
                 while (servidor->key > N)
                 {
-                    printf("A chave que inseriu é inválida.\nInsira um número menor que %d para a chave do seu servidor\n", N);
+                    printf("\nA chave que inseriu é inválida.\nInsira um número menor que %d para a chave do seu servidor\n", N);
                     printf("Chave: ");
                     if (fgets(key_error, 10, stdin) == NULL);
                     servidor->key = atoi(key_error);
@@ -503,28 +503,29 @@ int main(int argc, char *argv[])
             }
             else if (strcmp(comando, "show\n") == 0)
             {
-                printf("Escolheu: show\n");
+                printf("------------Escolheu: show----------------\n");
 
-                printf("Chave do servidor:%d \n", servidor->key);
-                printf("Endereço IP:%s \n", servidor->ipe);
-                printf("Porto:%s \n", servidor->porto);
+                printf("Chave do servidor: %d\n", servidor->key);
+                printf("Endereço IP: %s\n", servidor->ipe);
+                printf("Porto: %s\n", servidor->porto);
 
-                printf("\nINFORMAÇÕES DO SUCESSOR \n");
-                printf("Chave do succ:%d \n", servidor->next->key);
-                printf("Endereço IP succ:%s \n", servidor->next->ipe);
-                printf("Porto succ:%s \n", servidor->next->porto);
+                printf("\nINFORMAÇÕES DO SUCESSOR\n");
+                printf("Chave do succ: %d\n", servidor->next->key);
+                printf("Endereço IP succ: %s\n", servidor->next->ipe);
+                printf("Porto succ: %s\n", servidor->next->porto);
 
-                printf("\nINFORMAÇÕES DO SEGUNDO SUCESSOR \n");
-                printf("Chave do succ2:%d \n", servidor->next2->key);
-                printf("Endereço IP succ2:%s \n", servidor->next2->ipe);
-                printf("Porto succ2:%s \n\n", servidor->next2->porto);
+                printf("\nINFORMAÇÕES DO SEGUNDO SUCESSOR\n");
+                printf("Chave do succ2: %d\n", servidor->next2->key);
+                printf("Endereço IP succ2: %s\n", servidor->next2->ipe);
+                printf("Porto succ2: %s\n\n", servidor->next2->porto);
 
                 printf("Sessão com sucessor -> suc_fd = %d\n", suc_fd);
-                printf("Sessão com predecessor -> pre_fd= %d\n\n\n", pre_fd);
+                printf("Sessão com predecessor -> pre_fd= %d\n", pre_fd);
+                printf("\nFIM DO SHOW\n\n");
             }
             else if (strcmp(comando, "find") == 0)
             {
-                printf("Escolheu: find\n");
+                printf("\nEscolheu: find\n\n");
 
                 token = strtok(NULL, s);
                 key_k = atoi(token);
@@ -532,7 +533,7 @@ int main(int argc, char *argv[])
                  /* Verifica se o valor da chave inserida  é menor que o numero máximo N*/
                 while (key_k > N)
                 {
-                    printf("A chave que inseriu é inválida.\nInsira um número menor que %d para a chave que procura\n", N);
+                    printf("\nA chave que inseriu é inválida.\nInsira um número menor que %d para a chave que procura\n", N);
                     printf("Chave: ");
                     if (fgets(key_error, 10, stdin) == NULL);
                     key_k = atoi(key_error);
@@ -540,7 +541,7 @@ int main(int argc, char *argv[])
 
                 if (servidor->key == servidor->next->key)
                 {
-                    if (write(1, "A chave que procura está no servidor em que se encontra\n", 58) == -1)
+                    if (write(1, "\n\nA chave que procura está no servidor em que se encontra\n", 58) == -1)
                         ;
                 }
                 else if (distance(key_k, servidor->next->key) > distance(key_k, servidor->key))
@@ -553,19 +554,19 @@ int main(int argc, char *argv[])
                 {
                     printf("A chave %d foi encontrada\n", key_k);
                     printf("Encontra-se no servidor %d\nIP: %s\nPorto: %s", servidor->next->key, servidor->next->ipe, servidor->next->porto);
-                    printf("\n");
+                    printf("\n\n");
                 }
             }
             else if (strcmp(comando, "exit\n") == 0)
             {
-                printf("Escolheu: exit\n");
+                printf("\nEscolheu: exit\n");
                 close(fd);
                 close(afd);
                 exit(0);
             }
             else /* default: */
             {
-                printf("Erro, insira um comando válido\n");
+                printf("\nErro, insira um comando válido\n");
             }
         }
 
@@ -798,8 +799,6 @@ int main(int argc, char *argv[])
 
             if ((errcode = getnameinfo((struct sockaddr *)&addr, addrlen, host, sizeof host, service, sizeof service, 0)) != 0)
                 fprintf(stderr, "error: getnameinfo: %s\n", gai_strerror(errcode));
-            else
-                printf("sent by [%s:%s]\n", host, service);
 
             strcpy(ipe_entry, host);
             strcpy(porto_entry, service);
