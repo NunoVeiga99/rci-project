@@ -979,7 +979,7 @@ int main(int argc, char *argv[])
                 {
                     printf("\n\nA chave %d foi encontrada\n", key_k);
                     printf("Encontra-se no servidor %d\nIP: %s\nPorto: %s", servidor->next->key, servidor->next->ipe, servidor->next->porto);
-                    printf("\n");
+                    printf("\n\n");
                     is_entry = 0;
                     if (snprintf(mensagem, 130, "EKEY %d %d %s %s\n", key_k, servidor->next->key, servidor->next->ipe, servidor->next->porto) == -1)
                         exit(1);
@@ -1153,7 +1153,7 @@ int main(int argc, char *argv[])
 
                         printf("\n\nA chave %d foi encontrada\n", key_k);
                         printf("Encontra-se no servidor %d\nIP: %s\nPorto: %s", key_found, ipe_found, porto_found);
-                        printf("\n");
+                        printf("\n\n");
 
                         if (is_entry == 1)
                         {
