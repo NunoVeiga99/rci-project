@@ -203,6 +203,7 @@ int main(int argc, char *argv[])
     //VARIÁVEIS do comandoos de utilização ou iterações
     char comando[128]; //guarda o comando inserido pelo utilizador
     char mensagem[130];
+    char key_error[10];
 
     char mensagem1[65], mensagem2[65];
     int ler_nova = 0;
@@ -297,6 +298,7 @@ int main(int argc, char *argv[])
         }
         memset(buffer_full, 0, sizeof(buffer));
         memset(buffer_temp, 0, sizeof(buffer_temp));
+        memset(key_error,0,sizeof(key_error));
 
         n = 0;
         //"limpa" os descritores
@@ -361,13 +363,17 @@ int main(int argc, char *argv[])
             }
         }
 
+
+
+
         // Se há input para ler
         //É dentro deste if que se lê o input do utilizador
         if (FD_ISSET(0, &rfds)) //o 0 está reservado para o teclado
         {
             if (fgets(comando, 128, stdin) == NULL)
             {
-                //do something
+                //printf("ERRO na leitura de input");
+                //exit(1);//do something
             } //receber input do teclado
 
             //Dividir as mensagens
@@ -377,22 +383,22 @@ int main(int argc, char *argv[])
             {
                 printf("Escolheu: new\n");
                 token = strtok(NULL, s); //é o token que vai lendo as coisas SEGUINTES
+                servidor->key = atoi(token);
 
-                while (token > N)
+
+                /* Verifica se o valor da chave inserida  é menor que o numero máximo N*/
+                while (servidor->key > N)
                 {
-                    printf("Insira um número menor que 16");
-                    if (fgets(comando, 128, stdin) == NULL)
-                    {
-                        //do something
-                    } //receber input do teclado
-                    token = strtok(NULL, s);
+                    printf("A chave que inseriu é inválida.\nInsira um número menor que %d\n", N);
+                    printf("Chave: ");
+                    if (fgets(key_error, 10, stdin) == NULL);
+                    servidor->key = atoi(key_error);
                 }
 
-                servidor->key = atoi(token);
-                servidor->next->key = atoi(token);
+                servidor->next->key = servidor->key;
                 strcpy(servidor->next->ipe, argv[1]);
                 strcpy(servidor->next->porto, argv[2]);
-                servidor->next2->key = atoi(token);
+                servidor->next2->key = servidor->key;
                 strcpy(servidor->next2->ipe, argv[1]);
                 strcpy(servidor->next2->porto, argv[2]);
             }
@@ -402,6 +408,15 @@ int main(int argc, char *argv[])
 
                 token = strtok(NULL, s); //não é preciso guardar, só é preciso passar à frente
                 servidor->key = atoi(token);
+
+                 /* Verifica se o valor da chave inserida  é menor que o numero máximo N*/
+                while (servidor->key > N)
+                {
+                    printf("A chave que inseriu é inválida.\nInsira um número menor que %d para a chave do seu servidor\n", N);
+                    printf("Chave: ");
+                    if (fgets(key_error, 10, stdin) == NULL);
+                    servidor->key = atoi(key_error);
+                }
 
                 token = strtok(NULL, s);
 
@@ -424,6 +439,15 @@ int main(int argc, char *argv[])
 
                 token = strtok(NULL, s); //não é preciso guardar, só é preciso passar à frente
                 servidor->key = atoi(token);
+
+                 /* Verifica se o valor da chave inserida  é menor que o numero máximo N*/
+                while (servidor->key > N)
+                {
+                    printf("A chave que inseriu é inválida.\nInsira um número menor que %d para a chave do seu servidor\n", N);
+                    printf("Chave: ");
+                    if (fgets(key_error, 10, stdin) == NULL);
+                    servidor->key = atoi(key_error);
+                }
 
                 token = strtok(NULL, s);
                 servidor->next->key = atoi(token);
@@ -504,6 +528,15 @@ int main(int argc, char *argv[])
 
                 token = strtok(NULL, s);
                 key_k = atoi(token);
+
+                 /* Verifica se o valor da chave inserida  é menor que o numero máximo N*/
+                while (key_k > N)
+                {
+                    printf("A chave que inseriu é inválida.\nInsira um número menor que %d para a chave que procura\n", N);
+                    printf("Chave: ");
+                    if (fgets(key_error, 10, stdin) == NULL);
+                    key_k = atoi(key_error);
+                }
 
                 if (servidor->key == servidor->next->key)
                 {
