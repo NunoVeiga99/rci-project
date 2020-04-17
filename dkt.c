@@ -607,7 +607,7 @@ int main(int argc, char *argv[])
             }
             else if (strcmp(comando, "show\n") == 0)
             {
-                printf("------------Escolheu: show----------------\n");
+                printf("\n\n------------Escolheu: show----------------\n");
 
                 printf("Chave do servidor: %d\n", servidor->key);
                 printf("Endereço IP: %s\n", servidor->ipe);
@@ -629,7 +629,7 @@ int main(int argc, char *argv[])
             }
             else if (strcmp(comando, "find") == 0)
             {
-                printf("\nEscolheu: find\n\n");
+                printf("\nEscolheu: find");
 
                 token = strtok(NULL, s);
                 key_k = atoi(token);
@@ -658,7 +658,7 @@ int main(int argc, char *argv[])
                 }
                 else
                 {
-                    printf("A chave %d foi encontrada\n", key_k);
+                    printf("\n\nA chave %d foi encontrada\n", key_k);
                     printf("Encontra-se no servidor %d\nIP: %s\nPorto: %s", servidor->next->key, servidor->next->ipe, servidor->next->porto);
                     printf("\n\n");
                 }
@@ -962,7 +962,7 @@ int main(int argc, char *argv[])
                 if (servidor->key == servidor->next->key)
                 {
 
-                    if (write(1, "A chave que procura está no servidor em que se encontra\n", 58) == -1)
+                    if (write(1, "\n\nA chave que procura está no servidor em que se encontra\n", 58) == -1)
                         ;
                     is_entry = 0;
                     if (snprintf(mensagem, 130, "EKEY %d %d %s %s\n", key_k, servidor->key, servidor->ipe, servidor->porto) == -1)
@@ -977,7 +977,7 @@ int main(int argc, char *argv[])
                 }
                 else
                 {
-                    printf("A chave %d foi encontrada\n", key_k);
+                    printf("\n\nA chave %d foi encontrada\n", key_k);
                     printf("Encontra-se no servidor %d\nIP: %s\nPorto: %s", servidor->next->key, servidor->next->ipe, servidor->next->porto);
                     printf("\n");
                     is_entry = 0;
@@ -1151,7 +1151,7 @@ int main(int argc, char *argv[])
                         token = strtok(NULL, s);
                         strcpy(porto_found, token);
 
-                        printf("A chave %d foi encontrada\n", key_k);
+                        printf("\n\nA chave %d foi encontrada\n", key_k);
                         printf("Encontra-se no servidor %d\nIP: %s\nPorto: %s", key_found, ipe_found, porto_found);
                         printf("\n");
 
