@@ -11,7 +11,7 @@
 #include <fcntl.h>
 #include <sys/select.h>
 #include <time.h>
-#include<signal.h>
+#include <signal.h>
 
 #define max(A, B) ((A) >= (B) ? (A) : (B))
 
@@ -20,7 +20,6 @@
 #define N 16                //número máximo de servidores num anel
 #define udp_limite 2        //2 segundos de limite para o tempo udp
 #define udp_maxtentativas 5 //3 tentativas máximas para repetir enviar a mensagem tcp
-
 
 //Struct para guardar informações do servidor
 struct server
@@ -249,14 +248,12 @@ int main(int argc, char *argv[])
     strcpy(servidor->ipe, argv[1]);
     strcpy(servidor->porto, argv[2]);
 
-
     //Lidar com o SIGIPE
     struct sigaction act; // estrutura necessário para lidar com o sigpipe
-    memset(&act,0, sizeof(act));
-    act.sa_handler=SIG_IGN;
-    if (sigaction (SIGPIPE,&act, NULL)==-1) /*error*/ exit(1);
-
-
+    memset(&act, 0, sizeof(act));
+    act.sa_handler = SIG_IGN;
+    if (sigaction(SIGPIPE, &act, NULL) == -1) /*error*/
+        exit(1);
 
     // Cria socket TCP
     if ((fd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
@@ -380,6 +377,16 @@ int main(int argc, char *argv[])
             {
                 printf("Escolheu: new\n");
                 token = strtok(NULL, s); //é o token que vai lendo as coisas SEGUINTES
+
+                while (token > N)
+                {
+                    printf("Insira um número menor que 16");
+                    if (fgets(comando, 128, stdin) == NULL)
+                    {
+                        //do something
+                    } //receber input do teclado
+                    token = strtok(NULL, s);
+                }
 
                 servidor->key = atoi(token);
                 servidor->next->key = atoi(token);
