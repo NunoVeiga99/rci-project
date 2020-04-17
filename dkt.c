@@ -21,7 +21,19 @@
 #define udp_limite 2        //2 segundos de limite para o tempo udp
 #define udp_maxtentativas 5 //3 tentativas máximas para repetir enviar a mensagem tcp
 
-//Struct para guardar informações do servidor
+
+
+/*::::::::::::::::::::::::::::::::::::::::::::::ESTRUTURAS::::::::::::::::::::::::::::::::::::::::::::::::::::::*/
+
+
+
+/*---------------------------------------
+Estrutura server
+Guarda informações relativas ao servidor:
+* chave,porto e ip do próprio
+* ponteiros para a informação do 
+  primeiro e segundo sucessor.
+---------------------------------------*/
 struct server
 {
     int key;
@@ -31,9 +43,11 @@ struct server
     struct server *next2;
 } server;
 
-//Struct connection
-//Os valores estão = 1 quando a conexão está ativa
-//e = 0 caso contrário
+/*---------------------------------------
+Estrutura connection
+Os valores estão = 1 quando a conexão está ativa
+e = 0 caso contrário.
+----------------------------------------*/
 struct connection
 {
     int sucessor;
@@ -42,9 +56,17 @@ struct connection
 
 } connection;
 
+
+/*::::::::::::::::::::::::::::::::::::::::::::::: FUNÇÕES :::::::::::::::::::::::::::::::::::::::::::::::::::::::*/
+
+
 /*-----------------------------------------
-Função create_UDP
-Cria um socket UDP, ao qual atribui um descritor
+Função sendmessageUDP
+Envia uma mensagem udp para outro servidor
+Recebe como argumentos:
+* descritor udp (fd)
+* ip e porto do destino
+* mensagem a ser enviada
 -----------------------------------------*/
 void sendmessageUDP(int fd, char ip[128], char porto[128], char message[128])
 {
@@ -70,9 +92,11 @@ void sendmessageUDP(int fd, char ip[128], char porto[128], char message[128])
         exit(1);
 }
 
+
 /*-----------------------------------------
 Função create_TCP
-Cria um socket TCP, ao qual atribui um descritor
+Cria um socket TCP, ao qual atribui um descritor.
+Tem como entradas o ip e o porto.
 -----------------------------------------*/
 int create_TCP(char ip[128], char porto[128])
 {
@@ -91,14 +115,14 @@ int create_TCP(char ip[128], char porto[128])
     n = getaddrinfo(ip, porto, &hints, &res);
     if (n != 0) /*error*/
     {
-        fprintf(stderr, "ERRO CREATE: %s\n", gai_strerror(n));
+        fprintf(stderr, "ERRO CREATE TCP: %s\n", gai_strerror(n));
         exit(1);
     }
 
     n = connect(fd, res->ai_addr, res->ai_addrlen);
     if (n == -1) /*error*/
     {
-        fprintf(stderr, "ERRO2 connect: %s\n", gai_strerror(n));
+        fprintf(stderr, "ERRO CONNECT  TCP: %s\n", gai_strerror(n));
         exit(1);
     }
 
@@ -107,9 +131,12 @@ int create_TCP(char ip[128], char porto[128])
     return fd;
 }
 
+
 /*-----------------------------------------
 Função sendmessageTCP
-Envia uma mensagem TCP
+Envia uma mensagem TCP.
+Recebe como argumentos o descritor(fd) 
+e a mensagem a ser enviada.
 -----------------------------------------*/
 void sendmessageTCP(int fd, char message[130])
 {
@@ -137,6 +164,12 @@ void sendmessageTCP(int fd, char message[130])
     ptr = buffer;
 }
 
+
+/*------------------------------------------
+Função countspace
+Conta o numero de eocorrências de um caracter numa string.
+Recebe como asrugemntos a string e o caracter.
+------------------------------------------*/
 int countspace(char *s, char c)
 {
     int i, count = 0;
@@ -151,6 +184,13 @@ int countspace(char *s, char c)
     return count;
 }
 
+
+/*--------------------------------------------
+Função distance 
+Calcula e retorna a distância entre chaves no anel
+Recebe como argumento duas chaves
+--------------------------------------------*/
+
 int distance(int k, int l)
 {
     int result;
@@ -163,11 +203,23 @@ int distance(int k, int l)
     return result;
 }
 
+
+
+/*---------------------------------------------
+MAIN 
+Onde corre o programa principal.
+Recebe como argumentos o pc e o porto do servidor em questão,
+em argv.
+----------------------------------------------*/
 int main(int argc, char *argv[])
 {
 
+    /*_______________INICIALIZAÇÕES________________*/
+
+
+    //Descritores tcp e udp.
+    //Inicializados a -2.
     int fd = -2, newfd = -2, sfd = -2, afd = -2;
-    //int flags;
     int suc_fd = -2;
     int pre_fd = -2;
     fd_set rfds;
@@ -200,12 +252,12 @@ int main(int argc, char *argv[])
     socklen_t addrlen;
     char buffer[130], buffer_full[130], buffer_temp[130];
 
-    //VARIÁVEIS do comandoos de utilização ou iterações
+    //Strings 
     char comando[128]; //guarda o comando inserido pelo utilizador
-    char mensagem[130];
-    char key_error[10];
+    char mensagem[130]; 
+    char key_error[10]; //para o caso em que o utilizador coloca mal a key
 
-    char mensagem1[65], mensagem2[65];
+    //char mensagem1[65], mensagem2[65]; para testar mensagens tcp partidas
     int ler_nova = 0;
     int ler_suc = 0;
     int ler_pre = 0;
@@ -222,7 +274,7 @@ int main(int argc, char *argv[])
     //variáveis do entry
     char ipe_entry[128];
     char porto_entry[128];
-    int is_entry = 0;
+    int is_entry = 0; //diz se estamos durante um entry ou não
 
     //VARIÁVEIS do servidor udp
     struct addrinfo udphints, *udpres;
@@ -230,6 +282,8 @@ int main(int argc, char *argv[])
     ssize_t nread;
     char host[NI_MAXHOST], service[NI_MAXSERV];
 
+
+    //Variáveis de tempo relativas ao timer de mensagens udp
     struct timeval tempo_lim;
     tempo_lim.tv_sec = udp_limite; //segundos
     tempo_lim.tv_usec = 0;         //milisegundos
@@ -237,6 +291,10 @@ int main(int argc, char *argv[])
     int udp_tentativas = 0;
 
     time_t udp_ultima_tentativa = time(NULL);
+
+
+    /*_______________ FIM inicializações________________*/
+
 
     //Se na chamada do programa o numero de argumentos não fôr 3
     if (argc != 3)
@@ -249,12 +307,18 @@ int main(int argc, char *argv[])
     strcpy(servidor->ipe, argv[1]);
     strcpy(servidor->porto, argv[2]);
 
+
+
     //Lidar com o SIGIPE
     struct sigaction act; // estrutura necessário para lidar com o sigpipe
     memset(&act, 0, sizeof(act));
     act.sa_handler = SIG_IGN;
     if (sigaction(SIGPIPE, &act, NULL) == -1) /*error*/
         exit(1);
+
+
+
+    /*_______________SERVIDOR TCP_________________*/
 
     // Cria socket TCP
     if ((fd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
@@ -274,6 +338,9 @@ int main(int argc, char *argv[])
     if (listen(fd, 15) == -1) /*error*/
         exit(1);
 
+    
+    /*______________SERVIDOR UDP________________*/
+
     // Cria um socket UDP
     if ((udpfd = socket(AF_INET, SOCK_DGRAM, 0)) == -1)
         exit(1); //error
@@ -290,17 +357,28 @@ int main(int argc, char *argv[])
     if (bind(udpfd, udpres->ai_addr, udpres->ai_addrlen) == -1) /*error*/
         exit(1);
 
+
+
+
+
+    /*
+    WHILE PRINCIPAL
+    Loop que corre por tempo indefinido até o programa ser fechado.
+    */
     while (1)
     {
-        if ((ler_suc == 0) && (ler_pre == 0) && (ler_nova == 0))
+
+
+        //Limpar as strings e variáveis que necessitam de ser limpas
+        if ((ler_suc == 0) && (ler_pre == 0) && (ler_nova == 0)) // Se não estiver a ser lida nenhuma mensagem
         {
             memset(buffer, 0, sizeof(buffer));
         }
         memset(buffer_full, 0, sizeof(buffer));
         memset(buffer_temp, 0, sizeof(buffer_temp));
         memset(key_error,0,sizeof(key_error));
-
         n = 0;
+
         //"limpa" os descritores
         FD_ZERO(&rfds);
 
@@ -310,23 +388,31 @@ int main(int argc, char *argv[])
         FD_SET(udpfd, &rfds);   //espera UDP
         maxfd = max(fd, udpfd); //vê o maximo dos fd
 
-        if (ligacao->nova == 1)
+
+        if (ligacao->nova == 1) //Se estivermos a ler uma mensagem nova
         {
             FD_SET(afd, &rfds);
             maxfd = max(maxfd, afd);
         }
-        if (ligacao->sucessor == 1)
+        if (ligacao->sucessor == 1) //Se estamos conectados ao sucessor
         {
             FD_SET(suc_fd, &rfds);
             maxfd = max(maxfd, suc_fd);
         }
-        if (ligacao->predecessor == 1)
+        if (ligacao->predecessor == 1) //Se estamos conectados ao predecessor
         {
             FD_SET(pre_fd, &rfds);
             maxfd = max(maxfd, pre_fd);
         }
 
-        // SELECT
+
+        /*___________________________SELECT_______________________*/        
+
+        
+        /*
+        Se estamos a lidar com mensagens tcp usamos o select sem timer
+        Caso sejam mensagens udp, usamos com timer
+        */
         if (udp_tentativas > 0)
         {
             counter = select(maxfd + 1, &rfds, (fd_set *)NULL, (fd_set *)NULL, &tempo_lim);
@@ -342,7 +428,13 @@ int main(int argc, char *argv[])
             exit(1);
         } /*error*/
 
-        //Verificar se há timeout de udp
+        
+        
+        /*
+        Verifica se recebe resposta á mensagem udp EFND chega dentro do tempo.
+        Caso não chegue, reenvia a mensagem.
+        Tem 3 tentativas, quando as esgotar desiste.
+        */
         if (udp_tentativas > 0 && (time(NULL) - udp_ultima_tentativa) > udp_limite)
         {
             printf("À espera da resposta EFND");
@@ -364,27 +456,31 @@ int main(int argc, char *argv[])
         }
 
 
+        /*______________________FIM select______________________________*/
 
 
-        // Se há input para ler
-        //É dentro deste if que se lê o input do utilizador
-        if (FD_ISSET(0, &rfds)) //o 0 está reservado para o teclado
+
+        /*------------------
+        Caso seja recebido 
+        input do utilizador
+        -------------------*/
+        if (FD_ISSET(0, &rfds))
         {
+           
+           //Leitura do input
             if (fgets(comando, 128, stdin) == NULL)
             {
-                //printf("ERRO na leitura de input");
-                //exit(1);//do something
             } //receber input do teclado
 
             //Dividir as mensagens
             token = strtok(comando, s); //procurar no input onde está o espaço
-
+          
+            
             if (strcmp(comando, "new") == 0)
             {
                 printf("Escolheu: new\n");
                 token = strtok(NULL, s); //é o token que vai lendo as coisas SEGUINTES
                 servidor->key = atoi(token);
-
 
                 /* Verifica se o valor da chave inserida  é menor que o numero máximo N*/
                 while (servidor->key > N)
@@ -395,6 +491,8 @@ int main(int argc, char *argv[])
                     servidor->key = atoi(key_error);
                 }
 
+                //Guarda as informações
+                //Neste caso o servidor,sucessor, e sucessor2 são o mesmo
                 servidor->next->key = servidor->key;
                 strcpy(servidor->next->ipe, argv[1]);
                 strcpy(servidor->next->porto, argv[2]);
@@ -406,7 +504,7 @@ int main(int argc, char *argv[])
             {
                 printf("Escolheu: entry\n");
 
-                token = strtok(NULL, s); //não é preciso guardar, só é preciso passar à frente
+                token = strtok(NULL, s); 
                 servidor->key = atoi(token);
 
                  /* Verifica se o valor da chave inserida  é menor que o numero máximo N*/
@@ -424,7 +522,7 @@ int main(int argc, char *argv[])
                 strcpy(ipe_entry, token);
 
                 token = strtok(NULL, s);
-                token[strlen(token) - 1] = '\0';
+                token[strlen(token) - 1] = '\0'; // Remove o \n do fim do comando
                 strcpy(porto_entry, token);
 
                 if (snprintf(mensagem, 130, "EFND %d\n", servidor->key) == -1)
@@ -437,7 +535,7 @@ int main(int argc, char *argv[])
             {
                 printf("Escolheu: sentry\n");
 
-                token = strtok(NULL, s); //não é preciso guardar, só é preciso passar à frente
+                token = strtok(NULL, s);
                 servidor->key = atoi(token);
 
                  /* Verifica se o valor da chave inserida  é menor que o numero máximo N*/
@@ -461,12 +559,16 @@ int main(int argc, char *argv[])
 
                 sfd = create_TCP(servidor->next->ipe, servidor->next->porto);
 
-                /*
+                
                 if (snprintf(mensagem, 130, "NEW %d %s %s", servidor->key, servidor->ipe, servidor->porto) == -1)
                     exit(1);
                 sendmessageTCP(sfd, mensagem);
-                */
+                
 
+                /*Este código comentado serviu para testar a situação
+                em que a mensagem tcp não é enviada toda de uma vez*/
+
+                /*
                 if (snprintf(mensagem1, 130, "NEW %d ", servidor->key) == -1)
                     exit(1);
                 printf("A MSG1 É: %s\n", mensagem1);
@@ -475,6 +577,8 @@ int main(int argc, char *argv[])
                 printf("A MSG2 É: %s\n", mensagem2);
                 sendmessageTCP(sfd, mensagem1);
                 sendmessageTCP(sfd, mensagem2);
+                */
+
 
                 //Guarda informação de ligação com o sucessor
                 suc_fd = sfd;
@@ -538,11 +642,13 @@ int main(int argc, char *argv[])
                     key_k = atoi(key_error);
                 }
 
+                //Se o servidor se encontra sozinha no anel, não é necessário procurar
                 if (servidor->key == servidor->next->key)
                 {
                     if (write(1, "A chave que procura está no servidor em que se encontra\n", 58) == -1)
                         ;
                 }
+                //Neste caso continua-se a procura, pois a chave está mais perto do sucucessor
                 else if (distance(key_k, servidor->next->key) > distance(key_k, servidor->key))
                 {
                     if (snprintf(mensagem, 130, "FND %d %d %s %s\n", key_k, servidor->key, servidor->ipe, servidor->porto) == -1)
@@ -569,8 +675,12 @@ int main(int argc, char *argv[])
             }
         }
 
-        //Conexão TCP
-        if (FD_ISSET(fd, &rfds)) //receber TCP de alguem desconhecido
+         /*------------------
+        Caso seja recebida uma 
+        mensagem TCP de origem 
+        desconhecida.
+        -------------------*/
+        if (FD_ISSET(fd, &rfds)) 
         {
             addrlen = sizeof(addr);
 
@@ -578,6 +688,7 @@ int main(int argc, char *argv[])
             if ((newfd = accept(fd, (struct sockaddr *)&addr, &addrlen)) == -1) /*error*/
                 exit(1);
 
+            // O afd irá lidar com a leitura da mensagem na proxima iteração do while
             afd = newfd;
 
             if (ligacao->nova == 0)
@@ -587,14 +698,24 @@ int main(int argc, char *argv[])
             }
         }
 
-        //Canal com sucessor
-        if (FD_ISSET(suc_fd, &rfds) && ligacao->sucessor == 1) //MENSAGEM DO SUCESSOR
+        /*------------------
+        Caso seja recebida uma 
+        mensagem TCP do sucessor.
+        -------------------*/
+        if (FD_ISSET(suc_fd, &rfds) && ligacao->sucessor == 1) 
         {
             if ((n = read(suc_fd, buffer_temp, 130)) != 0)
             {
                 if (n == -1) //error
                     exit(1);
 
+
+                /*...
+                A mensagem é lida, mas pode não estar completa
+                Verifica-se então a presença de um "\n", que termina todas as mensagens
+                Caso não se detete, a mensagem não está completa e continua-se a ler,
+                até à mesma ser terminada por um "\n".
+                ...*/
                 if (strtok(buffer_temp, c) != NULL)
                 {
                     if (ler_suc == 1)
@@ -620,12 +741,16 @@ int main(int argc, char *argv[])
                     }
                 }
 
+
+
                 if (write(1, "Mensagem tcp recebida: ", 24) == -1)
                     ;
                 if (write(1, buffer, strlen(buffer)) == -1)
                     ;
                 printf("\n");
 
+
+                //Quando acabou a leitura
                 if (ler_suc == 0)
                 {
 
@@ -634,7 +759,7 @@ int main(int argc, char *argv[])
 
                     if (strcmp(buffer, "SUCC") == 0)
                     {
-                        token = strtok(NULL, s); //não é preciso guardar, só é preciso passar à frente
+                        token = strtok(NULL, s); 
                         servidor->next2->key = atoi(token);
 
                         token = strtok(NULL, s);
@@ -668,7 +793,9 @@ int main(int argc, char *argv[])
                     }
                 }
             }
-            else if (n == 0) //Caso não haja sucessor (o sucessor saiu)
+            //Caso tenha existido uma saida abrupta do sucessor.
+            //O programa re-arranja o anel para colmatar essa saida.
+            else if (n == 0) 
             {
                 close(suc_fd);
                 suc_fd = -2;
@@ -700,6 +827,10 @@ int main(int argc, char *argv[])
             }
         }
 
+        /*------------------
+        Caso seja recebida uma 
+        mensagem TCP do predecessor.
+        -------------------*/
         if (FD_ISSET(pre_fd, &rfds) && ligacao->predecessor == 1)
         {
             if ((n = read(pre_fd, buffer_temp, 130)) != 0)
@@ -710,6 +841,13 @@ int main(int argc, char *argv[])
                     exit(1);
                 }
 
+
+                /*...
+                A mensagem é lida, mas pode não estar completa
+                Verifica-se então a presença de um "\n", que termina todas as mensagens
+                Caso não se detete, a mensagem não está completa e continua-se a ler,
+                até à mesma ser terminada por um "\n".
+                ...*/
                 if (strtok(buffer_temp, c) != NULL)
                 {
                     if (ler_pre == 1)
@@ -735,12 +873,16 @@ int main(int argc, char *argv[])
                     }
                 }
 
+
+                
+
                 if (write(1, "Mensagem tcp recebida: ", 24) == -1)
                     ;
                 if (write(1, buffer, strlen(buffer)) == -1)
                     ;
                 printf("\n");
 
+                //Se a mensagem já foi lida
                 if (ler_pre == 0)
                 {
 
@@ -782,8 +924,11 @@ int main(int argc, char *argv[])
             }
         }
 
-        //Conexão UDP
-        if (FD_ISSET(udpfd, &rfds)) //receber UDP de alguem desconhecido
+        /*------------------
+        Caso seja recebida uma 
+        mensagem UDP.
+        -------------------*/
+        if (FD_ISSET(udpfd, &rfds)) 
         {
             addrlen = sizeof(addr);
             nread = recvfrom(udpfd, buffer, 130, 0, (struct sockaddr *)&addr, &addrlen);
@@ -814,6 +959,7 @@ int main(int argc, char *argv[])
                 token = strtok(NULL, s);
                 key_k = atoi(token);
 
+                //Código relativo ao find, encontra-se também na linha 646
                 if (servidor->key == servidor->next->key)
                 {
 
@@ -870,8 +1016,11 @@ int main(int argc, char *argv[])
             }
         }
 
-        //Receber mensagens de um servidor novo
-        if (FD_ISSET(afd, &rfds)) //MENSAGENS DE FORA
+        /*------------------
+        Lẽ a mensagem TCP de 
+        origem desconhecida
+        -------------------*/
+        if (FD_ISSET(afd, &rfds))
         {
             if ((n = read(afd, buffer_temp, 130)) != 0)
             {
@@ -881,6 +1030,14 @@ int main(int argc, char *argv[])
                     exit(1);
                 }
 
+
+
+                /*...
+                A mensagem é lida, mas pode não estar completa
+                Verifica-se então a presença de um "\n", que termina todas as mensagens
+                Caso não se detete, a mensagem não está completa e continua-se a ler,
+                até à mesma ser terminada por um "\n".
+                ...*/
                 if (strtok(buffer_temp, c) != NULL)
                 {
                     if (ler_nova == 1)
@@ -905,6 +1062,7 @@ int main(int argc, char *argv[])
                         ler_nova = 1;
                     }
                 }
+
 
                 if (write(1, "Mensagem tcp recebida: ", 24) == -1)
                     ;
